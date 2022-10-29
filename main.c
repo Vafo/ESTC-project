@@ -53,7 +53,17 @@
 #include "nrf_delay.h"
 #include "boards.h"
 
+#define DEVICE_ID 7199
 
+void id_to_led_blink(int num, int (*led_blink)[LEDS_NUMBER])
+{
+    int i;
+    for(i = LEDS_NUMBER - 1; i >= 0 ; i--)
+    {
+        (*led_blink)[i] = num % 10;
+        num /= 10;
+    }
+}
 
 /**
  * @brief Function for application main entry.
@@ -63,13 +73,21 @@ int main(void)
     /* Configure board. */
     bsp_board_init(BSP_INIT_LEDS);
 
+    int timing[LEDS_NUMBER];
+    id_to_led_blink(DEVICE_ID, &timing);
+
     /* Toggle LEDs. */
     while (true)
     {
         for (int i = 0; i < LEDS_NUMBER; i++)
         {
-            bsp_board_led_invert(i);
-            nrf_delay_ms(500);
+            for(int j = 0; j < timing[i]; j++)
+            {
+                bsp_board_led_invert(i);
+                nrf_delay_ms(250);
+                bsp_board_led_invert(i);
+                nrf_delay_ms(250);
+            }
         }
         
     }
