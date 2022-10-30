@@ -54,6 +54,7 @@
 #include "boards.h"
 
 #include "blink_hal.h"
+#include "button_hal.h"
 
 #define DEVICE_ID 7199
 #define BLINK_DURATION 250 // ms
