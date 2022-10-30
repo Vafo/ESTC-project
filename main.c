@@ -54,10 +54,11 @@
 #include "boards.h"
 
 #include "blink_hal.h"
+#include "button_hal.h"
 
 #define DEVICE_ID 7199
-#define BLINK_DURATION 250 // ms
-#define PAUSE_DURATION 250 
+#define BLINK_DURATION 500 // ms
+#define PAUSE_DURATION 500 
 
 void id_to_led_blink(int num, int (*led_blink)[LEDS_NUMBER])
 {
@@ -76,21 +77,31 @@ int main(void)
 {
     // Configure board. 
     led_init();
+    button_init();
 
     int timing[LEDS_NUMBER];
     id_to_led_blink(DEVICE_ID, &timing);
 
     // Toggle LEDs.
+    int i = 0,
+        j = 0;
     while (true)
     {
-        for (int i = 0; i < LEDS_NUMBER; i++)
+        while(button_pressed())
         {
-            for(int j = 0; j < timing[i]; j++)
+            led_invert(i);
+            nrf_delay_ms(BLINK_DURATION);
+            led_invert(i);
+            nrf_delay_ms(PAUSE_DURATION);
+            j++;
+            if(j >= timing[i])
             {
-                led_invert(i);
-                nrf_delay_ms(BLINK_DURATION);
-                led_invert(i);
-                nrf_delay_ms(PAUSE_DURATION);
+                j = 0;
+                i++;
+            }
+            if(i >= LEDS_NUMBER)
+            {
+                i = 0;
             }
         }
         

@@ -5,6 +5,9 @@
         "nrfx.h": "c",
         "nrfx_config.h": "c",
         "sdk_config.h": "c",
-        "stdbool.h": "c"
+        "stdbool.h": "c",
+        "nrf_gpio.h": "c",
+        "nordic_common.h": "c",
+        "pca10059.h": "c"
     }
 }
