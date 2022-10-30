@@ -53,7 +53,11 @@
 #include "nrf_delay.h"
 #include "boards.h"
 
+#include "blink_hal.h"
+
 #define DEVICE_ID 7199
+#define BLINK_DURATION 250 // ms
+#define PAUSE_DURATION 250 
 
 void id_to_led_blink(int num, int (*led_blink)[LEDS_NUMBER])
 {
@@ -70,27 +74,28 @@ void id_to_led_blink(int num, int (*led_blink)[LEDS_NUMBER])
  */
 int main(void)
 {
-    /* Configure board. */
-    bsp_board_init(BSP_INIT_LEDS);
+    // Configure board. 
+    led_init();
 
     int timing[LEDS_NUMBER];
     id_to_led_blink(DEVICE_ID, &timing);
 
-    /* Toggle LEDs. */
+    // Toggle LEDs.
     while (true)
     {
         for (int i = 0; i < LEDS_NUMBER; i++)
         {
             for(int j = 0; j < timing[i]; j++)
             {
-                bsp_board_led_invert(i);
-                nrf_delay_ms(250);
-                bsp_board_led_invert(i);
-                nrf_delay_ms(250);
+                led_invert(i);
+                nrf_delay_ms(BLINK_DURATION);
+                led_invert(i);
+                nrf_delay_ms(PAUSE_DURATION);
             }
         }
         
     }
+    
 }
 
 /**
