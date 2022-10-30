@@ -4,6 +4,7 @@
         "boards.h": "c",
         "nrfx.h": "c",
         "nrfx_config.h": "c",
-        "sdk_config.h": "c"
+        "sdk_config.h": "c",
+        "stdbool.h": "c"
     }
 }
