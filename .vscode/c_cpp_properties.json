@@ -85,19 +85,13 @@
                 "${env:stupidIncludePath}"
             ],
             "defines": [
-                "APP_TIMER_V2",
-                "APP_TIMER_V2_RTC1_ENABLED",
                 "BOARD_PCA10059",
                 "CONFIG_GPIO_AS_PINRESET",
                 "FLOAT_ABI_HARD",
                 "MBR_PRESENT",
                 "NRF52840_XXAA",
-                "NRF_SD_BLE_API_VERSION=7",
                 "__HEAP_SIZE=8192",
                 "__STACK_SIZE=8192",
-                "S140",
-                "SOFTDEVICE_PRESENT",
-                "__LINT__"
             ],
             "browse": {
                 "limitSymbolsToIncludedHeaders": true,

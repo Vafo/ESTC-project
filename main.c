@@ -73,6 +73,11 @@ void id_to_led_blink(int num, int (*led_blink)[LEDS_NUMBER])
 /**
  * @brief Function for application main entry.
  */
+ #define BTN_PRESS
+// #define BTN_HOLD
+
+#if defined(BTN_PRESS)
+
 int main(void)
 {
     // Configure board. 
@@ -108,6 +113,119 @@ int main(void)
     }
     
 }
+
+#elif defined(BTN_HOLD)
+
+#include "nrfx_gpiote.h"
+
+
+nrfx_gpiote_in_config_t  conf_release = {
+    .sense = NRF_GPIOTE_POLARITY_LOTOHI,    // Release
+    .pull = NRF_GPIO_PIN_PULLUP,
+    .is_watcher = false,
+    .hi_accuracy = 1,
+    .skip_gpio_setup = false
+};
+
+nrfx_gpiote_in_config_t  conf_press = {
+    .sense = NRF_GPIOTE_POLARITY_HITOLO,
+    .pull = NRF_GPIO_PIN_PULLUP,
+    .is_watcher = false,
+    .hi_accuracy = 1,
+    .skip_gpio_setup = false
+};
+
+
+void on_release(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action);
+void on_press(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
+{
+    nrfx_gpiote_in_uninit(pin);
+    nrfx_gpiote_in_init(pin, &conf_release, on_release);
+    nrfx_gpiote_in_event_enable(pin, true);
+    
+
+    /*
+    if(action == NRF_GPIOTE_POLARITY_HITOLO)
+        led_on(LED_1_IDX);
+    
+    if(action == NRF_GPIOTE_POLARITY_LOTOHI)
+        led_off(LED_1_IDX);
+    */
+}
+
+
+
+void on_release(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
+{
+    nrfx_gpiote_in_uninit(pin);
+    nrfx_gpiote_in_init(pin, &conf_press, on_press);
+    nrfx_gpiote_in_event_enable(pin, true);
+    
+    led_on(LED_2BLUE_IDX);
+    NVIC_ClearPendingIRQ(GPIOTE_IRQn);
+    while(!NVIC_GetPendingIRQ(GPIOTE_IRQn))
+        ;
+
+    led_off(LED_2BLUE_IDX);
+    
+}
+
+int main(void)
+{
+    
+    led_init();
+    nrfx_gpiote_init();
+    nrfx_err_t err_code1 = nrfx_gpiote_in_init(BUTTON_1, &conf_release, on_release);
+    // Configure board. 
+
+    nrfx_gpiote_in_event_enable(BUTTON_1, true);
+
+    if(err_code1 != NRFX_SUCCESS)
+    {
+        while (true)
+        {
+            led_invert(LED_2RED_IDX);
+            nrf_delay_ms(250);
+            led_invert(LED_2RED_IDX);
+            nrf_delay_ms(250);
+        }
+        
+    }
+    /*
+    while(true)
+    {
+        
+        led_invert(LED_2GREEN_IDX);
+        nrf_delay_ms(BLINK_DURATION);
+        led_invert(LED_2GREEN_IDX);
+        nrf_delay_ms(PAUSE_DURATION);
+        
+    }
+    */
+
+    
+    int timing[LEDS_NUMBER];
+    id_to_led_blink(DEVICE_ID, &timing);
+
+    // Toggle LEDs.
+    on_release(BUTTON_1, NRF_GPIOTE_POLARITY_LOTOHI);
+    while(true)
+    {
+        for(int i = 0; i < LEDS_NUMBER; i++)
+        {
+            for(int j = 0; j < timing[i]; j++)
+            {
+                led_invert(i);
+                nrf_delay_ms(BLINK_DURATION);
+                led_invert(i);
+                nrf_delay_ms(PAUSE_DURATION);
+            }
+        }
+    }
+    
+}
+
+#endif
 
 /**
  *@}
