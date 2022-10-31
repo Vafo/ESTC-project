@@ -73,8 +73,8 @@ void id_to_led_blink(int num, int (*led_blink)[LEDS_NUMBER])
 /**
  * @brief Function for application main entry.
  */
- #define BTN_PRESS
-// #define BTN_HOLD
+// #define BTN_PRESS
+#define BTN_HOLD
 
 #if defined(BTN_PRESS)
 
