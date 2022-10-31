@@ -2,6 +2,8 @@
     "env": {
         "SDK_ROOT": "/home/user/devel/esl-nsdk",
         "SDK_CFG": "${workspaceFolder}/config",
+        "PROJ_DIR" : "${workspaceFolder}",
+        "stupidIncludePath" : "${env:SDK_ROOT}/**",
         "defaultIncludePath": [
             "${env:SDK_ROOT}/components",
             "${env:SDK_ROOT}/modules/nrfx/mdk",
@@ -78,8 +80,9 @@
         {
             "name": "Linux",
             "includePath": [
+                "${env:PROJ_DIR}",
                 "${env:SDK_CFG}",
-                "${env:defaultIncludePath}"
+                "${env:stupidIncludePath}"
             ],
             "defines": [
                 "APP_TIMER_V2",
