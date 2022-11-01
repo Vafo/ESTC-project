@@ -35,6 +35,7 @@ SRC_FILES += \
   $(PROJ_DIR)/main.c \
   $(PROJ_DIR)/blink_hal.c \
   $(PROJ_DIR)/button_hal.c \
+  $(PROJ_DIR)/button_hold.c \
 
 # Include folders common to all targets
 INC_FOLDERS += \
