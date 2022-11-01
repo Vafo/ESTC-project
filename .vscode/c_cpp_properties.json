@@ -91,7 +91,7 @@
                 "MBR_PRESENT",
                 "NRF52840_XXAA",
                 "__HEAP_SIZE=8192",
-                "__STACK_SIZE=8192",
+                "__STACK_SIZE=8192"
             ],
             "browse": {
                 "limitSymbolsToIncludedHeaders": true,
