@@ -59,6 +59,7 @@
 #define DEVICE_ID 7199
 #define BLINK_DURATION 500 // ms
 #define PAUSE_DURATION 500 
+#define MICRO_PAUSE 10
 
 void id_to_led_blink(int num, int (*led_blink)[LEDS_NUMBER])
 {
@@ -68,6 +69,18 @@ void id_to_led_blink(int num, int (*led_blink)[LEDS_NUMBER])
         (*led_blink)[i] = num % 10;
         num /= 10;
     }
+}
+
+void progress_on_hold(uint32_t ms)
+{
+    uint32_t times = ms / MICRO_PAUSE;
+    for(int i = 0; i < times; i++)
+    {
+        while(!button_pressed())
+            ;
+        nrf_delay_ms(MICRO_PAUSE);
+    }
+    
 }
 
 /**
@@ -83,25 +96,17 @@ int main(void)
     id_to_led_blink(DEVICE_ID, &timing);
 
     // Toggle LEDs.
-    int i = 0,
-        j = 0;
+    button_pressed();
     while (true)
     {
-        while(button_pressed())
+        for(int i = 0; i < LEDS_NUMBER; i++)
         {
-            led_invert(i);
-            nrf_delay_ms(BLINK_DURATION);
-            led_invert(i);
-            nrf_delay_ms(PAUSE_DURATION);
-            j++;
-            if(j >= timing[i])
+            for(int j = 0; j < timing[i]; j++)
             {
-                j = 0;
-                i++;
-            }
-            if(i >= LEDS_NUMBER)
-            {
-                i = 0;
+                progress_on_hold(PAUSE_DURATION);
+                led_invert(i);
+                progress_on_hold(BLINK_DURATION);
+                led_invert(i);
             }
         }
         
