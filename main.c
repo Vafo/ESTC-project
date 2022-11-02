@@ -96,7 +96,6 @@ int main(void)
     id_to_led_blink(DEVICE_ID, &timing);
 
     // Toggle LEDs.
-    button_pressed();
     while (true)
     {
         for(int i = 0; i < LEDS_NUMBER; i++)
