@@ -1,5 +1,5 @@
 #ifndef BUTTON_HAL_H
-#define BUTTON_HAL
+#define BUTTON_HAL_H
 
 #include <stdint.h>
 #include "boards.h"
