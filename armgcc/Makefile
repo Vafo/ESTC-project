@@ -4,7 +4,7 @@ OUTPUT_DIRECTORY := _build
 DFU_PACKAGE      := $(OUTPUT_DIRECTORY)/nrf52840_xxaa.dfu
 DFU_PORT         ?= /dev/ttyACM0
 
-GNU_INSTALL_ROOT ?= /usr/bin/
+GNU_INSTALL_ROOT ?= $(dir $(shell (which arm-none-eabi-gcc)))
 SDK_ROOT ?= $(HOME)/devel/esl-nsdk
 PROJ_DIR ?= ../
 
