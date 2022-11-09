@@ -8,6 +8,8 @@
         "stdbool.h": "c",
         "nrf_gpio.h": "c",
         "nordic_common.h": "c",
-        "pca10059.h": "c"
+        "pca10059.h": "c",
+        "button_hold.h": "c",
+        "nrfx_gpiote.h": "c"
     }
 }
