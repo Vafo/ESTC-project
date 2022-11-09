@@ -11,6 +11,9 @@
 #define BLINK_DURATION 500 // ms
 #define PAUSE_DURATION 500 
 
+#define SLEEP_FRACTION_MS 10
+
+
 void id_to_led_blink(int num, int (*led_blink)[LEDS_NUMBER])
 {
     int i;
@@ -69,7 +72,7 @@ int main(void)
 
 #include "button_hold.h"
 
-int flip;
+volatile int btn_released;
 
 
 // Extracted from nrf_gpiote.h:409 :_-(
@@ -80,23 +83,36 @@ __STATIC_INLINE bool own_gpiote_event_is_set(nrfx_gpiote_pin_t pin)
     return (*(uint32_t *)nrfx_gpiote_in_event_addr_get(pin) == 0x1UL) ? true : false;
 }
 
-void sleeper()
+void btn_released_on()
 {
-    flip = 1;
-    while(!own_gpiote_event_is_set(BUTTON_1) && flip)
-        ;
+    btn_released = 1;
 }
 
-void set_flip()
+void btn_released_off()
 {
-    flip = 0;
+    btn_released = 0;
+}
+
+// FIXME ?
+// This function would be valid only if sleep_ms is multiple of SLEEP_FRACTION_MS
+void progress_on_hold(uint32_t sleep_ms)
+{
+    int num_fractions = sleep_ms / SLEEP_FRACTION_MS;
+    while(btn_released)
+        ;
+    for(int fraction_idx = 0; fraction_idx < num_fractions; fraction_idx++)
+    {
+        while(btn_released)
+            ;
+        nrf_delay_ms(SLEEP_FRACTION_MS);
+    }
 }
 
 int main(void)
 {
     
     led_init();
-    nrfx_err_t error = db_event_init(BUTTON_1, set_flip, sleeper);
+    nrfx_err_t error = db_event_init(BUTTON_1, btn_released_off, btn_released_on);
     if(error != NRFX_SUCCESS)
     {
         while(true)
@@ -112,7 +128,8 @@ int main(void)
     id_to_led_blink(DEVICE_ID, &timing);
 
     // Toggle LEDs.
-    sleeper();
+    btn_released_on();
+    progress_on_hold(0);
     while(true)
     {
         
@@ -121,9 +138,9 @@ int main(void)
             for(int j = 0; j < timing[i]; j++)
             {
                 led_invert(i);
-                nrf_delay_ms(BLINK_DURATION);
+                progress_on_hold(BLINK_DURATION);
                 led_invert(i);
-                nrf_delay_ms(PAUSE_DURATION);
+                progress_on_hold(PAUSE_DURATION);
             }
         }
         
