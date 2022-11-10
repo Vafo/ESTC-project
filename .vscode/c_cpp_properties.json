@@ -91,7 +91,9 @@
                 "MBR_PRESENT",
                 "NRF52840_XXAA",
                 "__HEAP_SIZE=8192",
-                "__STACK_SIZE=8192"
+                "__STACK_SIZE=8192",
+                "APP_TIMER_V2",
+                "APP_TIMER_V2_RTC1_ENABLED"
             ],
             "browse": {
                 "limitSymbolsToIncludedHeaders": true,
