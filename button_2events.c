@@ -43,28 +43,50 @@ nrfx_gpiote_in_config_t  conf_toggle = {
     .skip_gpio_setup = false
 };
 
-void (*db_event_user_on_press)(void);
-void (*db_event_user_on_release)(void);
-
-
-/*
-void db_on_toggle(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
+typedef struct 
 {
-    if(nrf_gpio_pin_read(pin) == 0)
-    {
-        debug_led_blue_on();
-        db_event_user_on_press();
-    }
-    else
-    {
-        debug_led_blue_off();
-        db_event_user_on_release();
-    }
-    
-}
-*/
+    uint32_t pin;
+    db_event_handler on_press[DB_EVENT_MAX_HANDLERS_PER_PIN];
+    db_event_handler on_release[DB_EVENT_MAX_HANDLERS_PER_PIN];
+    uint8_t valid;
+    app_timer_id_t const *debouncer;
+} db_event_pin_handlers_t;
 
-APP_TIMER_DEF(debouncer_timer);
+static uint8_t db_event_pin_handlers_initialized = 0;
+static db_event_pin_handlers_t pin_handlers[DB_EVENT_MAX_PINS];
+
+static uint8_t db_event_pin_idx_to_place(uint32_t pin)
+{
+    int i, vacant = -1;
+    int res = -1;
+    for(i = 0; i < DB_EVENT_MAX_PINS; i++)
+    {
+        if(pin_handlers[i].valid && pin_handlers[i].pin == pin)
+        {
+            break;
+        }
+        if(!pin_handlers[i].valid)
+        {
+            vacant = i;
+        }
+    }
+
+    if(i < DB_EVENT_MAX_PINS)
+    {
+        res = i;
+    }
+    else if(vacant >= 0 && vacant < DB_EVENT_MAX_PINS)
+    {
+        res = vacant;
+    }
+
+    return res;
+}
+
+
+APP_TIMER_DEF(debouncer_timer_1);
+APP_TIMER_DEF(debouncer_timer_2);
+
 #define TICKS_1MS APP_TIMER_TICKS(1)
 
 static void lfclk_request()
@@ -75,46 +97,61 @@ static void lfclk_request()
 
 void debouncer_timeout_handler(void *p_context)
 {
+    db_event_pin_handlers_t *pin_handle = p_context;
     debug_led_green_off();
     if(nrf_gpio_pin_read(BUTTON_1) == 0)
     {
         debug_led_blue_on();
-        db_event_user_on_press();
+        for (int handler = 0; handler < DB_EVENT_MAX_HANDLERS_PER_PIN; handler++)
+        {
+            if(pin_handle->on_press[handler] != NULL)
+            {
+                pin_handle->on_press[handler]();
+            }
+        }
+        
     }
     else
     {
         debug_led_blue_off();
-        db_event_user_on_release();
+        for (int handler = 0; handler < DB_EVENT_MAX_HANDLERS_PER_PIN; handler++)
+        {
+            if(pin_handle->on_release[handler] != NULL)
+            {
+                pin_handle->on_release[handler]();
+            }
+        }
     }
 }
 
 void db_on_toggle(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
 {
-    debug_led_blue_off();
+    // debug_led_blue_off();
     debug_led_green_on();
-    
+    int idx = db_event_pin_idx_to_place(pin);
+    if(idx < 0 || idx >= DB_EVENT_MAX_PINS)
+    {
+        db_blink_error();
+    }
+
+    db_event_pin_handlers_t *pin_handle = pin_handlers + idx;
+
     ret_code_t err;
-    err = app_timer_stop(debouncer_timer);
+    err = app_timer_stop(*(pin_handle->debouncer));
     if(err != NRFX_SUCCESS)
         db_blink_error();
-    err = app_timer_start(debouncer_timer, TICKS_1MS, NULL);
+    err = app_timer_start(*(pin_handle->debouncer), TICKS_1MS, pin_handle);
     if(err != NRFX_SUCCESS)
         db_blink_error();
 }
 
 
-nrfx_err_t db_event_init(nrfx_gpiote_pin_t pin, db_event_handler on_press, db_event_handler on_release)
+nrfx_err_t db_event_init()
 {
-    debug_led_blue_on();
+    // debug_led_blue_on();
     if(!nrfx_gpiote_is_init())
     {
         nrfx_gpiote_init();
-    }
-
-    nrfx_err_t err_code_nrfx = nrfx_gpiote_in_init(BUTTON_1, &conf_toggle, db_on_toggle);
-    if(err_code_nrfx != NRFX_SUCCESS)
-    {
-        return err_code_nrfx;
     }
     
     lfclk_request();
@@ -124,19 +161,147 @@ nrfx_err_t db_event_init(nrfx_gpiote_pin_t pin, db_event_handler on_press, db_ev
     {
         return err_timer;
     }
-    err_timer = app_timer_create(&debouncer_timer, APP_TIMER_MODE_SINGLE_SHOT, debouncer_timeout_handler);
-    if(err_timer != NRFX_SUCCESS)
+    
+    app_timer_id_t const *debouncers[DB_EVENT_MAX_PINS] = {&debouncer_timer_1, &debouncer_timer_2};
+    if(!db_event_pin_handlers_initialized)
     {
-        return err_timer;
+        db_event_pin_handlers_initialized = 1;
+        for(int i = 0; i < DB_EVENT_MAX_PINS; i++)
+        {
+            pin_handlers[i].valid = 0;
+            pin_handlers[i].debouncer = debouncers[i];
+            for(int j = 0; j < DB_EVENT_MAX_HANDLERS_PER_PIN; j++)
+            {
+                pin_handlers[i].on_press[j] = NULL;
+                pin_handlers[i].on_release[j] = NULL;
+            }
+        }
     }
-
-    NRFX_ASSERT(on_press != NULL)
-    db_event_user_on_press = on_press;
-    NRFX_ASSERT(on_release != NULL)
-    db_event_user_on_release = on_release;
-
-    nrfx_gpiote_in_event_enable(BUTTON_1, true);
 
     return NRFX_SUCCESS;
 }
 
+nrfx_err_t db_event_add(nrfx_gpiote_pin_t pin, db_event_handler on_press, db_event_handler on_release)
+{
+    int idx = db_event_pin_idx_to_place(pin);
+    int already_valid = 0;
+    int hndlr_idx;
+    if(idx == -1)
+    {
+        return NRFX_ERROR_NO_MEM;
+    }
+
+    already_valid = pin_handlers[idx].valid;
+
+    if(!already_valid)
+    {
+        nrfx_err_t err_code_nrfx = nrfx_gpiote_in_init(pin, &conf_toggle, db_on_toggle);
+        if(err_code_nrfx != NRFX_SUCCESS)
+        {
+            return err_code_nrfx;
+        }
+    }
+
+    for(hndlr_idx = 0; hndlr_idx < DB_EVENT_MAX_HANDLERS_PER_PIN; hndlr_idx++)
+    {
+        if(pin_handlers[idx].on_press[hndlr_idx] == NULL && \
+            pin_handlers[idx].on_release[hndlr_idx] == NULL)
+        {
+            break;   
+        }
+    }
+
+    if(hndlr_idx < DB_EVENT_MAX_HANDLERS_PER_PIN)
+    {
+        NRFX_ASSERT(on_press != NULL)
+        NRFX_ASSERT(on_release != NULL)
+        pin_handlers[idx].on_press[hndlr_idx] = on_press;
+        pin_handlers[idx].on_release[hndlr_idx] = on_release;
+    }
+    else
+    {
+        return NRFX_ERROR_NO_MEM;
+    }
+
+    pin_handlers[idx].pin = pin;
+    pin_handlers[idx].valid = 1;
+
+    nrfx_gpiote_in_event_enable(pin, true);
+
+    if(!already_valid)
+    {
+        nrfx_err_t err_timer = app_timer_create(pin_handlers[idx].debouncer, APP_TIMER_MODE_SINGLE_SHOT, debouncer_timeout_handler);
+        if(err_timer != NRFX_SUCCESS)
+        {
+            return err_timer;
+        }
+    }
+
+    return NRFX_SUCCESS;
+}
+
+
+nrfx_err_t db_event_delete_pin(nrfx_gpiote_pin_t pin)
+{
+    int idx = db_event_pin_idx_to_place(pin);
+    if(idx == -1)
+    {
+        return NRFX_ERROR_INVALID_PARAM;
+    }
+
+    db_event_pin_handlers_t *handles = pin_handlers + idx;
+
+    if(!handles->valid)
+    {
+        return NRFX_SUCCESS;
+    }
+
+    handles->pin = -1;
+    handles->valid = 0;
+    for(int handler = 0; handler < DB_EVENT_MAX_HANDLERS_PER_PIN; handler++)
+    {
+        handles->on_press[handler] = NULL;
+        handles->on_release[handler] = NULL;
+    }
+
+    app_timer_stop(*(handles->debouncer));
+    nrfx_gpiote_in_uninit(pin);
+
+    return NRFX_SUCCESS;
+}
+
+nrfx_err_t db_event_delete_handler(nrfx_gpiote_pin_t pin, db_event_handler on_press, db_event_handler on_release)
+{
+    int handler;
+    int idx = db_event_pin_idx_to_place(pin);
+    if(idx == -1)
+    {
+        return NRFX_ERROR_INVALID_PARAM;
+    }
+
+    db_event_pin_handlers_t *handles = pin_handlers + idx;
+
+    if(!handles->valid)
+    {
+        return NRFX_SUCCESS;
+    }
+
+    for(handler = 0; handler < DB_EVENT_MAX_HANDLERS_PER_PIN; handler++)
+    {
+        if(handles->on_press[handler] == on_press && \
+            handles->on_release[handler] == on_release)
+        {
+            break;   
+        }
+    }
+    
+    if(handler >= DB_EVENT_MAX_HANDLERS_PER_PIN)
+    {
+        return NRFX_ERROR_INVALID_PARAM;
+    }
+
+    handles->on_press[handler] = NULL;
+    handles->on_release[handler] = NULL;
+
+    return NRFX_SUCCESS;
+}

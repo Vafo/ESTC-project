@@ -19,6 +19,8 @@
 
 #define PI (float) 3.14159265359
 
+#define DBL_CLICK_MARGIN 500 // ms
+
 // Blinks error state infinitely
 void blink_error()
 {
@@ -42,39 +44,18 @@ void id_to_led_blink(int num, int (*led_blink)[LEDS_NUMBER])
     }
 }
 
-/*
-volatile int btn_released;
 
-void btn_released_on()
-{
-    btn_released = 1;
-}
-
-void btn_released_off()
-{
-    btn_released = 0;
-}
-
-// FIXME ?
-// This function would be valid only if sleep_ms is multiple of SLEEP_FRACTION_MS
-//
-// Notes: Maybe there is better way to wait for event to happen, and then unfreeze?
-
-void progress_on_hold(uint32_t sleep_ms)
-{
-    int num_fractions = sleep_ms / SLEEP_FRACTION_MS;
-    while(btn_released)
-        ;
-    for(int fraction_idx = 0; fraction_idx < num_fractions; fraction_idx++)
-    {
-        while(btn_released)
-            ;
-        nrf_delay_ms(SLEEP_FRACTION_MS);
-    }
-}
-*/
+volatile int hold_blink;
 
 void (*custom_blink)(uint32_t led, uint32_t period, uint32_t num_periods);
+
+void custom_blink_wrapper(uint32_t led, uint32_t period, uint32_t num_periods)
+{
+    do
+    {
+        custom_blink(led, period, num_periods);
+    } while (hold_blink);
+}
 
 void discrete_blink(uint32_t led, uint32_t period, uint32_t num_periods)
 {
@@ -94,19 +75,44 @@ void on_press()
     custom_blink = discrete_blink;
 }
 
-
 void on_release()
 {
     custom_blink = smooth_blink;
 }
 
+void on_boba()
+{
+    led_on(LED_2RED_IDX);
+}
+
+void out_boba()
+{
+    led_off(LED_2RED_IDX);
+}
 
 int main(void)
 {
     
     led_init_all();
     pwm_led_init();
-    nrfx_err_t error = db_event_init(BUTTON_1, on_press, on_release);
+    nrfx_err_t error = db_event_init();
+    if(error != NRFX_SUCCESS)
+    {
+        blink_error();
+    }
+    error = db_event_add(BUTTON_1, on_press, on_release);
+    if(error != NRFX_SUCCESS)
+    {
+        blink_error();
+    }
+
+    error = db_event_add(BUTTON_1, on_boba, out_boba);
+    if(error != NRFX_SUCCESS)
+    {
+        blink_error();
+    }
+
+    error = db_event_delete_handler(BUTTON_1, on_boba, out_boba);
     if(error != NRFX_SUCCESS)
     {
         blink_error();
@@ -115,6 +121,7 @@ int main(void)
     int timing[LEDS_NUMBER];
     id_to_led_blink(DEVICE_ID, &timing);
     custom_blink = smooth_blink;
+    hold_blink = 0;
 
     uint32_t num_periods = ROUNDED_DIV(BLINK_DURATION + PAUSE_DURATION, PWM_PERIOD_MS);
     while(true)
@@ -126,7 +133,7 @@ int main(void)
             {
                 for(uint32_t period = 0; period < num_periods; period++)
                 {
-                    custom_blink(led, period, num_periods);
+                    custom_blink_wrapper(led, period, num_periods);
                 }
             }
         }
@@ -134,24 +141,6 @@ int main(void)
     }
     
 }
-
-/*
-int main(void)
-{
-    led_init_all();
-    pwm_led_init();
-    uint32_t num_cycles = ROUNDED_DIV(BLINK_DURATION + PAUSE_DURATION, PWM_PERIOD_MS);
-    while(true)
-    {
-        for(int i = 0; i < num_cycles; i++)
-        {
-            float value = ((float) i / num_cycles) * 2 * PI;
-            pwm_led_value(LED_2RED_IDX, sinf(value));
-        }
-        
-    }
-}
-*/
 
 /**
  *@}

@@ -28,6 +28,7 @@
         "nrfx_clock.h": "c",
         "nrfx_glue.h": "c",
         "nrfx_systick.h": "c",
-        "arm_math.h": "c"
+        "arm_math.h": "c",
+        "button_2events.h": "c"
     }
 }
