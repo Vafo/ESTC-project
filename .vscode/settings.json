@@ -20,6 +20,12 @@
         "nrf_rtc.h": "c",
         "nrf_atfifo.h": "c",
         "sdk_errors.h": "c",
-        "app_scheduler.h": "c"
+        "app_scheduler.h": "c",
+        "sdk_common.h": "c",
+        "nrfx_timer.h": "c",
+        "nrf_timer.h": "c",
+        "nrf_drv_clock.h": "c",
+        "nrfx_clock.h": "c",
+        "nrfx_glue.h": "c"
     }
 }

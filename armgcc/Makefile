@@ -32,8 +32,12 @@ SRC_FILES += \
   $(SDK_ROOT)/modules/nrfx/soc/nrfx_atomic.c \
   $(SDK_ROOT)/modules/nrfx/mdk/system_nrf52840.c \
   $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_gpiote.c \
+  $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_clock.c \
+  $(SDK_ROOT)/components/libraries/sortlist/nrf_sortlist.c \
+  $(SDK_ROOT)/components/libraries/atomic_fifo/nrf_atfifo.c \
   $(SDK_ROOT)/components/libraries/timer/app_timer2.c \
   $(SDK_ROOT)/components/libraries/timer/drv_rtc.c \
+  $(SDK_ROOT)/integration/nrfx/legacy/nrf_drv_clock.c \
   $(PROJ_DIR)/main.c \
   $(PROJ_DIR)/blink_hal.c \
   $(PROJ_DIR)/button_hal.c \
@@ -59,6 +63,7 @@ INC_FOLDERS += \
   $(SDK_ROOT)/components/libraries/experimental_section_vars \
   $(SDK_ROOT)/components/libraries/delay \
   $(SDK_ROOT)/integration/nrfx \
+  $(SDK_ROOT)/integration/nrfx/legacy \
   $(SDK_ROOT)/components/drivers_nrf/nrf_soc_nosd \
   $(SDK_ROOT)/components/libraries/atomic \
   $(SDK_ROOT)/components/boards \

@@ -50,6 +50,50 @@
 // I dont know this markup language, so I will blatantly insert defs that I need
 // Everything is copied from (sdk_root)/config/nrf52840
 
+// Needed for nrf_sortlist.c, which is used by app_time2.c
+#ifndef NRF_SORTLIST_ENABLED
+#define NRF_SORTLIST_ENABLED 1
+#endif
+
+#ifndef NRF_CLOCK_ENABLED
+#define NRF_CLOCK_ENABLED 1
+#endif
+
+// <e> NRFX_CLOCK_ENABLED - nrfx_clock - CLOCK peripheral driver
+//==========================================================
+#ifndef NRFX_CLOCK_ENABLED
+#define NRFX_CLOCK_ENABLED 0
+#endif
+// <o> NRFX_CLOCK_CONFIG_LF_SRC  - LF Clock Source
+ 
+// <0=> RC 
+// <1=> XTAL 
+// <2=> Synth 
+// <131073=> External Low Swing 
+// <196609=> External Full Swing 
+
+#ifndef NRFX_CLOCK_CONFIG_LF_SRC
+#define NRFX_CLOCK_CONFIG_LF_SRC 1
+#endif
+
+// <o> NRFX_CLOCK_CONFIG_IRQ_PRIORITY  - Interrupt priority
+ 
+// <0=> 0 (highest) 
+// <1=> 1 
+// <2=> 2 
+// <3=> 3 
+// <4=> 4 
+// <5=> 5 
+// <6=> 6 
+// <7=> 7 
+
+#ifndef NRFX_CLOCK_CONFIG_IRQ_PRIORITY
+#define NRFX_CLOCK_CONFIG_IRQ_PRIORITY 6
+#endif
+
+
+// -------------------------------
+
 // <o> APP_TIMER_CONFIG_RTC_FREQUENCY  - Configure RTC prescaler.
  
 // <0=> 32768 Hz 
@@ -97,7 +141,7 @@
 // <i> This option can be used when app_timer is used for timestamping.
 
 #ifndef APP_TIMER_KEEPS_RTC_ACTIVE
-#define APP_TIMER_KEEPS_RTC_ACTIVE 0
+#define APP_TIMER_KEEPS_RTC_ACTIVE 1
 #endif
 
 // <o> APP_TIMER_SAFE_WINDOW_MS - Maximum possible latency (in milliseconds) of handling app_timer event. 
