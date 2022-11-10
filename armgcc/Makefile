@@ -41,8 +41,9 @@ SRC_FILES += \
   $(SDK_ROOT)/components/boards/boards.c \
   $(PROJ_DIR)/main.c \
   $(PROJ_DIR)/button_hal.c \
-  $(PROJ_DIR)/button_2events.c \
   $(PROJ_DIR)/blink_hal.c \
+  $(PROJ_DIR)/button_2events.c \
+  $(PROJ_DIR)/pwm_led.c \
 
 # Include folders common to all targets
 INC_FOLDERS += \
@@ -93,6 +94,8 @@ CFLAGS += -DMBR_PRESENT
 CFLAGS += -DNRF52840_XXAA
 CFLAGS += -DAPP_TIMER_V2
 CFLAGS += -DAPP_TIMER_V2_RTC1_ENABLED
+CFLAGS += -DNRFX_SYSTICK_ENABLED
+
 CFLAGS += -mcpu=cortex-m4
 CFLAGS += -mthumb -mabi=aapcs
 CFLAGS += -Wall -Werror
