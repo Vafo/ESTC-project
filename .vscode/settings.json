@@ -10,6 +10,16 @@
         "nordic_common.h": "c",
         "pca10059.h": "c",
         "button_hold.h": "c",
-        "nrfx_gpiote.h": "c"
+        "nrfx_gpiote.h": "c",
+        "app_timer.h": "c",
+        "drv_rtc.h": "c",
+        "app_util.h": "c",
+        "compiler_abstraction.h": "c",
+        "nrf_drv_rtc.h": "c",
+        "nrfx_rtc.h": "c",
+        "nrf_rtc.h": "c",
+        "nrf_atfifo.h": "c",
+        "sdk_errors.h": "c",
+        "app_scheduler.h": "c"
     }
 }
