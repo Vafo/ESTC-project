@@ -12,7 +12,7 @@
 #endif
 
 void led_init_all(void);
-void led_init(uint32_t led)()
+void led_init(uint32_t led);
 void led_on(uint32_t led);
 void led_off(uint32_t led);
 void led_invert(uint32_t led);

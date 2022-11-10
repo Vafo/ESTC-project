@@ -1,4 +1,5 @@
-#include "button_hold.h"
+#include "button_2events.h"
+#include "drv_rtc.h"
 
 #define BLINK_DEBUG 0
 
@@ -26,6 +27,8 @@ nrfx_gpiote_in_config_t  conf_toggle = {
 
 void (*db_event_user_on_press)(void);
 void (*db_event_user_on_release)(void);
+
+
 
 void db_on_toggle(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
 {

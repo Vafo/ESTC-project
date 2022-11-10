@@ -6,7 +6,7 @@
 
 #include "blink_hal.h"
 #include "button_hal.h"
-#include "button_hold.h"
+#include "button_2events.h"
 
 
 #define DEVICE_ID 7199
