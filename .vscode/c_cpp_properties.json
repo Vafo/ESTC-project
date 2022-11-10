@@ -93,7 +93,8 @@
                 "__HEAP_SIZE=8192",
                 "__STACK_SIZE=8192",
                 "APP_TIMER_V2",
-                "APP_TIMER_V2_RTC1_ENABLED"
+                "APP_TIMER_V2_RTC1_ENABLED",
+                "NRFX_SYSTICK_ENABLED"
             ],
             "browse": {
                 "limitSymbolsToIncludedHeaders": true,
