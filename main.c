@@ -4,6 +4,8 @@
 #include "nrf_delay.h"
 #include "boards.h"
 #include "math.h"
+#include "app_timer.h"
+#include "nrf_drv_clock.h"
 
 #include "blink_hal.h"
 #include "button_hal.h"
@@ -18,6 +20,7 @@
 #define SLEEP_FRACTION_MS 10
 
 #define PI (float) 3.14159265359
+#define HOLD_MARGIN 500 // ms
 
 // Blinks error state infinitely
 void blink_error()
@@ -75,6 +78,14 @@ void progress_on_hold(uint32_t sleep_ms)
 */
 
 void (*custom_blink)(uint32_t led, uint32_t period, uint32_t num_periods);
+volatile int blink_hold;
+void custom_blink_wrapper(uint32_t led, uint32_t period, uint32_t num_periods)
+{
+    do
+    {
+        custom_blink(led, period, num_periods);
+    } while (blink_hold);
+}
 
 void discrete_blink(uint32_t led, uint32_t period, uint32_t num_periods)
 {
@@ -89,15 +100,37 @@ void smooth_blink(uint32_t led, uint32_t period, uint32_t num_periods)
     pwm_led_value(led, sinf(value));
 }
 
-void on_press()
+APP_TIMER_DEF(double_click_timer);
+volatile int num_press;
+
+static void lfclk_request()
 {
-    custom_blink = discrete_blink;
+    nrf_drv_clock_init();
+    nrf_drv_clock_lfclk_request(NULL);
 }
 
+void double_click_timer_timeout()
+{
+    num_press = 0;
+}
+
+void on_press()
+{
+    if(num_press == 0)
+    {
+        app_timer_start(double_click_timer, APP_TIMER_TICKS(HOLD_MARGIN), NULL);
+    }
+    num_press++;
+}
 
 void on_release()
 {
-    custom_blink = smooth_blink;
+    if(num_press == 2)
+    {
+        app_timer_stop(double_click_timer);
+        num_press = 0;
+        blink_hold ^= 1;
+    }
 }
 
 
@@ -111,6 +144,14 @@ int main(void)
     {
         blink_error();
     }
+
+    error = app_timer_create(&double_click_timer, APP_TIMER_MODE_SINGLE_SHOT, double_click_timer_timeout);
+    if(error != NRFX_SUCCESS)
+    {
+        blink_error();
+    }
+    blink_hold = 0;
+
 
     int timing[LEDS_NUMBER];
     id_to_led_blink(DEVICE_ID, &timing);
@@ -126,7 +167,7 @@ int main(void)
             {
                 for(uint32_t period = 0; period < num_periods; period++)
                 {
-                    custom_blink(led, period, num_periods);
+                    custom_blink_wrapper(led, period, num_periods);
                 }
             }
         }
