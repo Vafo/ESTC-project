@@ -85,6 +85,7 @@
                 "${env:stupidIncludePath}"
             ],
             "defines": [
+                "USE_APP_CONFIG",
                 "BOARD_PCA10059",
                 "CONFIG_GPIO_AS_PINRESET",
                 "FLOAT_ABI_HARD",
@@ -93,8 +94,7 @@
                 "__HEAP_SIZE=8192",
                 "__STACK_SIZE=8192",
                 "APP_TIMER_V2",
-                "APP_TIMER_V2_RTC1_ENABLED",
-                "NRFX_SYSTICK_ENABLED"
+                "APP_TIMER_V2_RTC1_ENABLED"
             ],
             "browse": {
                 "limitSymbolsToIncludedHeaders": true,
