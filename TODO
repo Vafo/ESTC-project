@@ -1,0 +1,8 @@
+[]  Refactor and add structures
+    [] Lower the line of bare code (be more abstract)
+    [] Use structures, where suitable
+
+[]  Try to fuse logic of 1st task with 2nd task of Workshop 4
+[]  Use logs more
+[]  Implement common abstract RTC timer for different callbacks | single/repeated | time slice
+[]  Workshop 5   
