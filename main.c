@@ -59,25 +59,34 @@ void id_to_led_blink(int num, int (*led_blink)[LEDS_NUMBER])
 
 void (*custom_blink)(uint32_t led, uint32_t period, uint32_t num_periods);
 volatile int blink_hold;
+volatile int period_cur;
+volatile int period_hold;
+
 void custom_blink_wrapper(uint32_t led, uint32_t period, uint32_t num_periods)
 {
+    if(!period_hold)
+    {
+        period_cur = period;
+    }
+
     do
     {
         custom_blink(led, period, num_periods);
     } while (blink_hold);
 }
 
+void smooth_blink(uint32_t led, uint32_t period, uint32_t num_periods)
+{
+    float value = ((float) period_cur / num_periods) * 2 * PI;
+    pwm_led_value(led, sinf(value));
+}
+
 void discrete_blink(uint32_t led, uint32_t period, uint32_t num_periods)
 {
     uint32_t ms = period * PWM_PERIOD_MS;
-    float value = (ms < BLINK_DURATION) ? 1 : 0;
+    float value = ((float) period_cur / num_periods) * 2 * PI;
+    value = (ms < BLINK_DURATION) ? sinf(value) : 0;
     pwm_led_value(led, value);
-}
-
-void smooth_blink(uint32_t led, uint32_t period, uint32_t num_periods)
-{
-    float value = ((float) period / num_periods) * 2 * PI;
-    pwm_led_value(led, sinf(value));
 }
 
 APP_TIMER_DEF(double_click_timer);
@@ -90,6 +99,8 @@ void double_click_timer_timeout()
 
 void on_press()
 {
+    custom_blink = smooth_blink;
+    period_hold = 0;
     if(num_press == 0)
     {
         app_timer_start(double_click_timer, APP_TIMER_TICKS(HOLD_MARGIN), NULL);
@@ -99,6 +110,8 @@ void on_press()
 
 void on_release()
 {
+    custom_blink = discrete_blink;
+    period_hold = 1;
     if(num_press == 2)
     {
         NRF_LOG_INFO("Double click happened!!!!")
@@ -123,7 +136,6 @@ void logs_init()
 
 int main(void)
 {
-    
     led_init_all();
     pwm_led_init();
     logs_init();
@@ -140,15 +152,16 @@ int main(void)
     APP_ERROR_CHECK(error);
     NRF_LOG_INFO("Timer created");
 
-    blink_hold = 0;
-
-
     int timing[LEDS_NUMBER];
     id_to_led_blink(DEVICE_ID, &timing);
-    custom_blink = smooth_blink;
+    custom_blink = discrete_blink;
 
     NRF_LOG_INFO("Starting to blink ...");
     uint32_t num_periods = ROUNDED_DIV(BLINK_DURATION + PAUSE_DURATION, PWM_PERIOD_MS);
+    blink_hold = 0;
+    period_hold = 1;
+    period_cur = num_periods / 4;
+
     while(true)
     {
         
