@@ -11,7 +11,6 @@
 #include "app_timer.h"
 
 #include "blink_hal.h"
-#include "button_hal.h"
 #include "button_2events.h"
 #include "pwm_led.h"
 
@@ -47,12 +46,12 @@ void blink_error()
     }
 }
 
-void id_to_led_blink(int num, int (*led_blink)[LEDS_NUMBER])
+void id_to_led_blink(int num, int *dest, int size)
 {
     int i;
-    for(i = LEDS_NUMBER - 1; i >= 0 ; i--)
+    for(i = size - 1; i >= 0 ; i--)
     {
-        (*led_blink)[i] = num % 10;
+        dest[i] = num % 10;
         num /= 10;
     }
 }
@@ -153,7 +152,7 @@ int main(void)
     NRF_LOG_INFO("Timer created");
 
     int timing[LEDS_NUMBER];
-    id_to_led_blink(DEVICE_ID, &timing);
+    id_to_led_blink(DEVICE_ID, timing, LEDS_NUMBER);
     custom_blink = discrete_blink;
 
     NRF_LOG_INFO("Starting to blink ...");

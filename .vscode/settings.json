@@ -36,6 +36,9 @@
         "nrf_log_internal.h": "c",
         "nrf_log_ctrl.h": "c",
         "nrf_log_backend_usb.h": "c",
-        "nrfx_common.h": "c"
+        "nrfx_common.h": "c",
+        "blink_hal.h": "c",
+        "type_traits": "c",
+        "button_hal.h": "c"
     }
 }
