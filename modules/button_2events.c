@@ -1,4 +1,6 @@
 #include "button_2events.h"
+#include "button_hal.h"
+
 #include "app_timer.h"
 #include "drv_rtc.h"
 #include "nrf_drv_clock.h"
@@ -47,23 +49,6 @@ void (*db_event_user_on_press)(void);
 void (*db_event_user_on_release)(void);
 
 
-/*
-void db_on_toggle(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
-{
-    if(nrf_gpio_pin_read(pin) == 0)
-    {
-        debug_led_blue_on();
-        db_event_user_on_press();
-    }
-    else
-    {
-        debug_led_blue_off();
-        db_event_user_on_release();
-    }
-    
-}
-*/
-
 APP_TIMER_DEF(debouncer_timer);
 #define TICKS_1MS APP_TIMER_TICKS(1)
 
@@ -76,7 +61,7 @@ static void lfclk_request()
 void debouncer_timeout_handler(void *p_context)
 {
     debug_led_green_off();
-    if(nrf_gpio_pin_read(BUTTON_1) == 0)
+    if(button_is_pressed(BUTTON_1))
     {
         debug_led_blue_on();
         db_event_user_on_press();

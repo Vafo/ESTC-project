@@ -11,3 +11,6 @@ external/**/*.a
 # Emacs TAGS and environment
 TAGS
 .dir-locals.el
+
+# strange settings.json
+.vscode/settings.json
