@@ -2,6 +2,7 @@
 #define PWM_LED_H
 
 #include <stdint.h>
+#include "app_util.h"
 
 /** @brief PWM frequency in Hz. */
 #define PWM_FREQ 1000

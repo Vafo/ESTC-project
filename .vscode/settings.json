@@ -39,6 +39,10 @@
         "nrfx_common.h": "c",
         "blink_hal.h": "c",
         "type_traits": "c",
-        "button_hal.h": "c"
+        "button_hal.h": "c",
+        "main_blinking.h": "c",
+        "pwm_led.h": "c",
+        "main_click.h": "c",
+        "main_logs.h": "c"
     }
 }

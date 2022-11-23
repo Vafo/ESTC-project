@@ -58,13 +58,13 @@ void led_invert(uint32_t led)
     nrf_gpio_pin_toggle(leds_gpio[led]);
 }
 
-void led_is_on(uint32_t led)
+uint8_t led_is_on(uint32_t led)
 {
     ASSERT(led < LEDS_NUMBER);
     return nrf_gpio_pin_read(leds_gpio[led]) == LED_GPIO_ON;
 }
 
-void led_is_off(uint32_t led)
+uint8_t led_is_off(uint32_t led)
 {
     ASSERT(led < LEDS_NUMBER);
     return nrf_gpio_pin_read(leds_gpio[led]) == LED_GPIO_OFF;

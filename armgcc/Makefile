@@ -51,11 +51,14 @@ SRC_FILES += \
   $(SDK_ROOT)/components/libraries/usbd/app_usbd_string_desc.c \
   $(SDK_ROOT)/components/libraries/usbd/app_usbd_serial_num.c \
   $(SDK_ROOT)/components/boards/boards.c \
+  $(PROJ_DIR)/modules/button_hal.c \
+  $(PROJ_DIR)/modules/blink_hal.c \
+  $(PROJ_DIR)/modules/button_2events.c \
+  $(PROJ_DIR)/modules/pwm_led.c \
+  $(PROJ_DIR)/main-parts/main_blinking.c \
+  $(PROJ_DIR)/main-parts/main_click.c \
+  $(PROJ_DIR)/main-parts/main_logs.c \
   $(PROJ_DIR)/main.c \
-  $(PROJ_DIR)/button_hal.c \
-  $(PROJ_DIR)/blink_hal.c \
-  $(PROJ_DIR)/button_2events.c \
-  $(PROJ_DIR)/pwm_led.c \
 
 # Include folders common to all targets
 INC_FOLDERS += \
@@ -90,6 +93,8 @@ INC_FOLDERS += \
   $(SDK_ROOT)/components/boards \
   $(SDK_ROOT)/components \
   $(PROJ_DIR)/config \
+  $(PROJ_DIR)/modules \
+  $(PROJ_DIR)/main-parts \
   $(PROJ_DIR) \
 
 # Libraries common to all targets

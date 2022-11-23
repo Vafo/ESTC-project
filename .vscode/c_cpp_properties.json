@@ -3,6 +3,8 @@
         "SDK_ROOT": "/home/user/devel/esl-nsdk",
         "SDK_CFG": "${workspaceFolder}/config",
         "PROJ_DIR": "${workspaceFolder}",
+        "PROJ_PARTS": "${workspaceFolder}/main-parts",
+        "PROJ_MODULES": "${workspaceFolder}/modules",
         "stupidIncludePath": "${env:SDK_ROOT}/**",
         "defaultIncludePath": [
             "${env:SDK_ROOT}/components",
@@ -81,6 +83,8 @@
             "name": "Linux",
             "includePath": [
                 "${env:PROJ_DIR}",
+                "${env:PROJ_PARTS}",
+                "${env:PROJ_MODULES}",
                 "${env:SDK_CFG}",
                 "${env:stupidIncludePath}"
             ],

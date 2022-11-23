@@ -56,14 +56,20 @@ void led_invert(uint32_t led);
  * @brief Function for checking whether led is on.
  *
  * @param[in] led LED index.
+ * 
+ * @retval 1 Led is on.
+ * @retval 0 Led is off.
  */
-void led_is_on(uint32_t led);
+uint8_t led_is_on(uint32_t led);
 
 /**
  * @brief Function for checking whether led is off.
  *
  * @param[in] led LED index.
+ * 
+ * @retval 1 Led is off.
+ * @retval 0 Led is on.
  */
-void led_is_off(uint32_t led);
+uint8_t led_is_off(uint32_t led);
 
 #endif

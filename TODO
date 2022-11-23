@@ -1,13 +1,14 @@
-[]  Refactor and add structures
-    [] Lower the line of bare code (be more abstract)
+[ ] Refactor and add structures
+    [x] Lower the line of bare code (be more abstract)
         [x] ./blink_hal.c
         [x] ./pwm_led.c
         [x] ./button_hal.c
-        [] ./button_2events.c
-        [] ./main.c
-    [] Use structures, where suitable
+        [x] ./button_2events.c
+        [x] ./main.c
+    [ ] Use structures, enums where suitable
 
-[x]  Try to fuse logic of 1st task with 2nd task of Workshop 4
-[]  Use logs more
-[]  Implement common abstract RTC timer for different callbacks | single/repeated | time slice
-[]  Workshop 5   
+[x] Try to fuse logic of 1st task with 2nd task of Workshop 4
+[ ] Implement message/events
+[ ] Use logs more
+[ ] Implement common abstract RTC timer for different callbacks | single/repeated | time slice
+[ ] Workshop 5   
