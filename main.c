@@ -19,13 +19,13 @@ int main(void)
 
     int timing[LEDS_NUMBER];
     id_to_led_blink(DEVICE_ID, timing, LEDS_NUMBER);
-    custom_blink = discrete_blink;
+    custom_blink_f = discrete_blink;
 
     NRF_LOG_INFO("Starting to blink ...");
-    uint32_t num_periods = ROUNDED_DIV(BLINK_DURATION + PAUSE_DURATION, PWM_PERIOD_MS);
+    uint32_t num_ticks = ROUNDED_DIV(BLINK_DURATION + PAUSE_DURATION, PWM_PERIOD_MS);
     blink_hold = 0;
-    period_hold = 1;
-    period_cur = num_periods / 4;
+    intensity_hold = 1;
+    intensity_cur = num_ticks / 4;
 
     while(true)
     {
@@ -35,9 +35,9 @@ int main(void)
             for(int led_blinks = 0; led_blinks < timing[led]; led_blinks++)
             {
                 NRF_LOG_INFO("Blinking led %d, %d / %d", led, led_blinks + 1, timing[led]);
-                for(uint32_t period = 0; period < num_periods; period++)
+                for(uint32_t tick = 0; tick < num_ticks; tick++)
                 {
-                    custom_blink_wrapper(led, period, num_periods);
+                    custom_blink_wrapper(led, tick, num_ticks);
 
                     LOG_BACKEND_USB_PROCESS();
                     NRF_LOG_PROCESS();

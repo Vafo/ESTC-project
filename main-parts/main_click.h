@@ -16,5 +16,6 @@ void main_click_init();
 void double_click_timer_timeout();
 void on_press();
 void on_release();
+void on_double_click();
 
 #endif
