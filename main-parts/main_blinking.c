@@ -47,18 +47,18 @@ void discrete_blink(uint32_t led, uint32_t tick, uint32_t num_ticks)
 void vary_intensity(uint32_t led, uint32_t tick, uint32_t num_ticks)
 {
     intensity_hold = 0;
+    int delay_blink = 0;
     while(!intensity_hold)
     {
-        while (intensity_cur < num_ticks && !intensity_hold)
+        delay_blink++;
+        if(delay_blink != 5)
         {
-            // Maybe I need to use goto, so that avoid that much of !intensity_hold ?
-            for(int i = 0; i < CHANGE_HOLD_TICKS && !intensity_hold; i++)
-            {
-                smooth_blink(led,tick, num_ticks);
-            }
-
-            intensity_cur++;
+            delay_blink = 0;
+            continue;
         }
+        smooth_blink(led,tick, num_ticks);
+
+        intensity_cur++;
         if(intensity_cur >= num_ticks)
         {
             intensity_cur = 0;

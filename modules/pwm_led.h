@@ -16,6 +16,7 @@
  */
 void pwm_led_init(void);
 
+void pwm_led_value(uint32_t pin, float duty_cycle);
 
 /**
  * @brief Function for pulsing LED for period.
@@ -23,6 +24,7 @@ void pwm_led_init(void);
  * @param[in] pin Pin index.
  * @param[in] duty_cycle Duty cycle in range [0-1].
  */
-void pwm_led_value(uint32_t pin, float duty_cycle);
+void pwm_led_individual_value(uint32_t pin, float duty_cycle);
+void pwm_led_individual_value_and_wait(uint32_t led_idx, float duty_cycle);
 
 #endif

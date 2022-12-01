@@ -47,6 +47,9 @@
         "app_config.h": "c",
         "nrf_pwm.h": "c",
         "nrf52840.h": "c",
-        "nrfx_pwm.h": "c"
+        "nrfx_pwm.h": "c",
+        "nrf.h": "c",
+        "nrf_peripherals.h": "c",
+        "nrf52840_peripherals.h": "c"
     }
 }
