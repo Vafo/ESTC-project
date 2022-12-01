@@ -4,7 +4,7 @@
 #include "nrf_delay.h"
 
 #include "blink_hal.h"
-#include "pwm_led.h"
+#include "main_pwm.h"
 
 #include "math.h"
 

@@ -1,7 +1,7 @@
 #include "main_click.h"
 #include "main_blinking.h"
 #include "main_logs.h"
-
+#include "main_pwm.h"
 
 void main_click_init()
 {
@@ -14,12 +14,14 @@ void main_click_init()
 void on_press()
 {
     custom_blink_f = vary_intensity;
+    func_hold = 1;
 }
 
 void on_release()
 {
     custom_blink_f = discrete_blink;
     intensity_hold = 1;
+    func_hold = 0;
 }
 
 void on_double_click()

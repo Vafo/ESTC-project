@@ -38,7 +38,7 @@ void smooth_blink(uint32_t led, uint32_t tick, uint32_t num_ticks)
 
 void discrete_blink(uint32_t led, uint32_t tick, uint32_t num_ticks)
 {
-    uint32_t ms = tick * PWM_PERIOD_MS;
+    uint32_t ms = tick * MAIN_PWM_PERIOD_MS;
     float value = ((float) intensity_cur / num_ticks) * 2 * PI;
     value = (ms < BLINK_DURATION) ? ABS(sinf(value)) : 0;
     pwm_led_value(led, value);
