@@ -46,7 +46,6 @@ void discrete_blink(uint32_t led, uint32_t tick, uint32_t num_ticks)
 
 void vary_intensity(uint32_t led, uint32_t tick, uint32_t num_ticks)
 {
-    intensity_hold = 0;
     while(!intensity_hold)
     {
         while (intensity_cur < num_ticks && !intensity_hold)

@@ -13,11 +13,14 @@ void main_click_init()
 
 void on_press()
 {
+    intensity_hold = 0;
+    NRF_LOG_INFO("Press happened!!!!");
     custom_blink_f = vary_intensity;
 }
 
 void on_release()
 {
+    NRF_LOG_INFO("Release happened!!!!");
     custom_blink_f = discrete_blink;
     intensity_hold = 1;
 }
