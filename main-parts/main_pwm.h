@@ -19,7 +19,7 @@
 /** @brief PWM Top value. */
 #define MAIN_PWM_TOP_VALUE 1000
 /** @brief Function duration in ms*/
-#define MAIN_PWM_FNC_DURATION 10000
+#define MAIN_PWM_FNC_DURATION 2500
 
 /** @brief PWM Base clock frequency in Hz. */
 #define MAIN_PWM_FREQ ((16000000) / (1 << MAIN_PWM_BASE_CLOCK)) 
