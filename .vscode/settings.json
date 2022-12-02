@@ -50,6 +50,7 @@
         "nrfx_pwm.h": "c",
         "nrf.h": "c",
         "nrf_peripherals.h": "c",
-        "nrf52840_peripherals.h": "c"
+        "nrf52840_peripherals.h": "c",
+        "main_pwm.h": "c"
     }
 }

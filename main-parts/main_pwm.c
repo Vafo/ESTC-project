@@ -52,9 +52,34 @@ static nrf_pwm_sequence_t pwm_seq = {
 
 uint8_t func_hold;
 
-#define TOT_PERIODS ((uint32_t) (MAIN_PWM_FNC_DURATION / MAIN_PWM_PERIOD_MS))
+#define TOT_PERIODS ((uint32_t) (MAIN_PWM_FNC_DURATION / MAIN_PWM_PERIOD_MS) * 2)
 #define SINE_AMPLITUDE 1
 static uint32_t period_num;
+
+// Input [0 - 1]
+// Output [0 - MAIN_PWM_TOP_VALUE]
+float sine_arc_func(float input)
+{
+    float res;
+    input = input * PI;
+    res = sinf(input);
+    res = (res / SINE_AMPLITUDE) * MAIN_PWM_TOP_VALUE;
+
+    return res;
+}
+
+// Input [0 - 1]
+// Output [0 - MAIN_PWM_TOP_VALUE]
+float saw_func(float input)
+{
+    float res;
+    // input = input * MAIN_PWM_TOP_VALUE;
+    float inner_ = input - 0.5; 
+    inner_ = 2*MAIN_PWM_TOP_VALUE * inner_;
+    res = (-1) * ABS( inner_ ) + MAIN_PWM_TOP_VALUE;
+    
+    return res;
+}
 
 void pwm_handler_half_sine(nrfx_pwm_evt_type_t event)
 {
@@ -64,11 +89,10 @@ void pwm_handler_half_sine(nrfx_pwm_evt_type_t event)
     {
     case NRFX_PWM_EVT_END_SEQ0:
     case NRFX_PWM_EVT_END_SEQ1:
-        if(!func_hold)
+        if(func_hold)
         {
-            time_var = ((float) period_num / TOT_PERIODS) * PI;
-            new_val = sinf(time_var);
-            new_val = (new_val / SINE_AMPLITUDE) * MAIN_PWM_TOP_VALUE;
+            time_var = ((float) period_num / TOT_PERIODS);
+            new_val = saw_func(time_var);
             NRF_LOG_INFO("Setting value %d PERIOD %d / %d", (uint16_t) new_val, period_num, TOT_PERIODS);
             for(int i = 0; i < 4; i++)
             {
@@ -116,6 +140,7 @@ void pwm_handler_half_sine(nrfx_pwm_evt_type_t event)
 void pwm_led_init(void)
 {
     _ready_to_copy = 0;
+    func_hold = 0;
     nrfx_pwm_init(&pwm_instance, &pwm_config, pwm_handler_half_sine);
     nrfx_pwm_simple_playback(&pwm_instance, &pwm_seq, 1, NRFX_PWM_FLAG_LOOP | NRFX_PWM_FLAG_SIGNAL_END_SEQ0 | NRFX_PWM_FLAG_SIGNAL_END_SEQ1);
 }
