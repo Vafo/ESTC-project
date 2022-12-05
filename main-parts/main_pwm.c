@@ -211,6 +211,7 @@ void pwm_led_init(void)
     _ready_to_copy = 0;
     func_hold = 0;
     duty_cycles_rgb.spec.counter_top = MAIN_PWM_TOP_VALUE;
+    nrfx_pwm_uninit(&pwm_instance_rgb);
     nrfx_pwm_init(&pwm_instance_rgb, &pwm_config_rgb, pwm_handler_half_sine);
     nrfx_pwm_simple_playback(&pwm_instance_rgb, &pwm_seq_rgb, 1, NRFX_PWM_FLAG_LOOP | NRFX_PWM_FLAG_SIGNAL_END_SEQ0 | NRFX_PWM_FLAG_SIGNAL_END_SEQ1);
 
