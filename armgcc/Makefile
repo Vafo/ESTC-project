@@ -55,6 +55,7 @@ SRC_FILES += \
   $(PROJ_DIR)/modules/button_hal.c \
   $(PROJ_DIR)/modules/blink_hal.c \
   $(PROJ_DIR)/modules/button_2events.c \
+  $(PROJ_DIR)/modules/pwm_abs.c \
   $(PROJ_DIR)/main-parts/main_blinking.c \
   $(PROJ_DIR)/main-parts/main_click.c \
   $(PROJ_DIR)/main-parts/main_pwm.c \

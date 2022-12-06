@@ -1,5 +1,5 @@
-#ifndef PWM_LED_H
-#define PWM_LED_H
+#ifndef MAIN_PWM_LED_H
+#define MAIN_PWM_LED_H
 
 #include <stdint.h>
 #include "app_util.h"
@@ -38,13 +38,5 @@ void pwm_led_init(void);
 
 void pwm_led_value(uint32_t pin, float duty_cycle);
 
-/**
- * @brief Function for pulsing LED for period.
- * 
- * @param[in] pin Pin index.
- * @param[in] duty_cycle Duty cycle in range [0-1].
- */
-void pwm_led_individual_value(uint32_t pin, float duty_cycle);
-void pwm_led_individual_value_and_wait(uint32_t led_idx, float duty_cycle);
 
 #endif
