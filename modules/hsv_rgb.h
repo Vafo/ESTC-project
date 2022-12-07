@@ -17,7 +17,7 @@ typedef enum
     RGB_B_IDX,
 
     RGB_COMPONENT_NUMBER
-} rgb_idx;
+} rgb_idx_t;
 
 typedef struct 
 {
