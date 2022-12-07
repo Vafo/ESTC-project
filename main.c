@@ -2,16 +2,17 @@
 #include <stdint.h>
 #include "boards.h"
 
-#include "main_blinking.h"
+#include "blink_hal.h"
+
 #include "main_click.h"
 #include "main_logs.h"
-#include "main_click.h"
+#include "main_pwm.h"
 
 
 int main(void)
 {
     led_init_all();
-    pwm_led_init();
+    main_pwm_init();
     
     NRF_LOG_INFO("Starting up the test project with USB logging");
     main_logs_init();

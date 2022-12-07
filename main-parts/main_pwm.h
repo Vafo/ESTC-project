@@ -16,25 +16,29 @@
 /** @brief PWM Base clock index. */
 #define MAIN_PWM_BASE_CLOCK 4
 
-/** @brief PWM Top value. */
-#define MAIN_PWM_TOP_VALUE 1000
-/** @brief Function duration in ms*/
-#define MAIN_PWM_FNC_DURATION 2500
+typedef float (*main_pwm_math_fn)(float input, uint32_t top_value);
 
-/** @brief PWM Base clock frequency in Hz. */
-#define MAIN_PWM_FREQ ((16000000) / (1 << MAIN_PWM_BASE_CLOCK)) 
-// /** @brief PWM period in US. */
-// #define MAIN_PWM_PERIOD_US (((float) 1000000) / MAIN_PWM_FREQ)
-/** @brief PWM period in MS. */
-#define MAIN_PWM_PERIOD_MS ((((float) 1000) / MAIN_PWM_FREQ) * MAIN_PWM_TOP_VALUE)
-
+extern main_pwm_math_fn rgb_math_fn;
+extern main_pwm_math_fn led_math_fn;
 
 extern uint8_t func_hold;
+
+// Input [0 - 1]
+// Output [0 - top_value]
+float sine_arc_func(float input, uint32_t top_value);
+
+// Input [0 - 1]
+// Output [0 - top_value]
+float saw_func(float input, uint32_t top_value);
+
+// Input [0 - 1]
+// Output [0 - top_value]
+float stair_func(float input, uint32_t top_value);
 
 /**
  * @brief Function for initializing PWM.
  */
-void pwm_led_init(void);
+void main_pwm_init(void);
 
 void pwm_led_value(uint32_t pin, float duty_cycle);
 

@@ -10,7 +10,6 @@
 #include "app_usbd.h"
 #include "app_usbd_serial_num.h"
 
-#include "main_blinking.h"
 
 
 /**
