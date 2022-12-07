@@ -38,7 +38,7 @@ void smooth_blink(uint32_t led, uint32_t tick, uint32_t num_ticks)
 
 void discrete_blink(uint32_t led, uint32_t tick, uint32_t num_ticks)
 {
-    uint32_t ms = tick * PWM_PERIOD_MS;
+    uint32_t ms = tick * MAIN_PWM_PERIOD_MS;
     float value = ((float) intensity_cur / num_ticks) * 2 * PI;
     value = (ms < BLINK_DURATION) ? ABS(sinf(value)) : 0;
     pwm_led_value(led, value);
@@ -46,18 +46,20 @@ void discrete_blink(uint32_t led, uint32_t tick, uint32_t num_ticks)
 
 void vary_intensity(uint32_t led, uint32_t tick, uint32_t num_ticks)
 {
+
+    intensity_hold = 0;
+    int delay_blink = 0;
     while(!intensity_hold)
     {
-        while (intensity_cur < num_ticks && !intensity_hold)
+        delay_blink++;
+        if(delay_blink != 5)
         {
-            // Maybe I need to use goto, so that avoid that much of !intensity_hold ?
-            for(int i = 0; i < CHANGE_HOLD_TICKS && !intensity_hold; i++)
-            {
-                smooth_blink(led,tick, num_ticks);
-            }
-
-            intensity_cur++;
+            delay_blink = 0;
+            continue;
         }
+        smooth_blink(led,tick, num_ticks);
+
+        intensity_cur++;
         if(intensity_cur >= num_ticks)
         {
             intensity_cur = 0;

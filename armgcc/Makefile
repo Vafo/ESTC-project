@@ -5,7 +5,8 @@ DFU_PACKAGE      := $(OUTPUT_DIRECTORY)/nrf52840_xxaa.dfu
 DFU_PORT         ?= /dev/ttyACM0
 
 GNU_INSTALL_ROOT ?= $(dir $(shell (which arm-none-eabi-gcc)))
-SDK_ROOT ?= $(HOME)/devel/esl-nsdk
+SDK_ROOT ?= $(HOME)/dev/embedded/base/esl-nsdk
+
 PROJ_DIR ?= ../
 
 $(OUTPUT_DIRECTORY)/nrf52840_xxaa.out: \
@@ -21,6 +22,7 @@ SRC_FILES += \
   $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_systick.c \
   $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_usbd.c \
   $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_power.c \
+  $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_pwm.c \
   $(SDK_ROOT)/integration/nrfx/legacy/nrf_drv_clock.c \
   $(SDK_ROOT)/integration/nrfx/legacy/nrf_drv_power.c \
   $(SDK_ROOT)/external/fprintf/nrf_fprintf_format.c \
@@ -54,11 +56,15 @@ SRC_FILES += \
   $(PROJ_DIR)/modules/button_hal.c \
   $(PROJ_DIR)/modules/blink_hal.c \
   $(PROJ_DIR)/modules/button_2events.c \
-  $(PROJ_DIR)/modules/pwm_led.c \
-  $(PROJ_DIR)/main-parts/main_blinking.c \
+  $(PROJ_DIR)/modules/pwm_abs.c \
+  $(PROJ_DIR)/modules/hsv_rgb.c \
   $(PROJ_DIR)/main-parts/main_click.c \
+  $(PROJ_DIR)/main-parts/main_pwm.c \
   $(PROJ_DIR)/main-parts/main_logs.c \
+  $(PROJ_DIR)/main-parts/main_picker_stm.c \
   $(PROJ_DIR)/main.c \
+
+  # $(PROJ_DIR)/main-parts/main_blinking.c // Outdated pwm used
 
 # Include folders common to all targets
 INC_FOLDERS += \
