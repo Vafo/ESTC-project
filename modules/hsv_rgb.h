@@ -10,7 +10,7 @@ typedef enum
     HSV_COMPONENT_NUMBER
 } hsv_idx_t;
 
-enum 
+typedef enum 
 {
     RGB_R_IDX,
     RGB_G_IDX,
