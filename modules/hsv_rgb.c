@@ -1,23 +1,43 @@
 #include "hsv_rgb.h"
+#include "nrf_assert.h"
 
 #define ABS(X) ( (X) < 0 ? (-(X)) : (X))
 
 void hsv_update_component(hsv *hsv_src, hsv_idx_t component, float val)
 {
     ASSERT(component >= 0 && component < HSV_COMPONENT_NUMBER);
+    
+    switch (component)
+    {
+        case HSV_H_IDX:
+            hsv_src->h = val;
+            break;
 
-    float *hsv_raw = (float *) hsv_src;
-    hsv_raw[component] = val;
+        case HSV_S_IDX:
+            hsv_src->s = val;
+            break;
+        
+        case HSV_V_IDX:
+            hsv_src->v = val;
+            break;
+
+        case HSV_COMPONENT_NUMBER:
+            ASSERT(0);    
+            break;
+    }   
+
+    // float *hsv_raw = (float *) hsv_src;
+    // hsv_raw[component] = val;
 }
 
-static void hsv_set_values(hsv *hsv_dest, float h, float s, float v)
+void hsv_set_values(hsv *hsv_dest, float h, float s, float v)
 {
     hsv_dest->h = h;
     hsv_dest->s = s;
     hsv_dest->v = v;
 }
 
-static void rgb_set_values(rgb *rgb_dest, float r, float g, float b)
+void rgb_set_values(rgb *rgb_dest, float r, float g, float b)
 {
     rgb_dest->r = r;
     rgb_dest->g = g;
@@ -31,14 +51,21 @@ static void rgb_add_scalar(rgb *rgb_dest, float scalar)
     rgb_dest->b += scalar;
 }
 
-static void rgb_copy(rgb *src, rgb *dst)
+// static void rgb_div_by_scalar(rgb *rgb_dest, float scalar)
+// {
+//     rgb_dest->r /= scalar;
+//     rgb_dest->g /= scalar;
+//     rgb_dest->b /= scalar;
+// }
+
+void rgb_copy(rgb *src, rgb *dst)
 {
     dst->r = src->r;
     dst->g = src->g;
     dst->b = src->b;
 }
 
-static void hsv_copy(hsv *src, hsv *dst)
+void hsv_copy(hsv *src, hsv *dst)
 {
     dst->h = src->h;
     dst->s = src->s;
@@ -50,7 +77,11 @@ void hsv_to_rgb(hsv *hsv_src, rgb *rgb_dest)
     float value;
     float C, X, M;
     unsigned int H;
-    rgb rgb_tmp;
+    rgb rgb_tmp = {
+        .r = 0,
+        .g = 0,
+        .b = 0,
+    };
 
     value = hsv_src->v;
     H = hsv_src->h * 6;     // h * 360 / 60 = h * 6

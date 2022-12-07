@@ -45,6 +45,7 @@ void rgb_to_hsv(rgb *rgb_src, hsv *hsv_dest);
 void hsv_set_values(hsv *hsv_dest, float h, float s, float v);
 void rgb_set_values(rgb *rgb_dest, float r, float g, float b);
 
-
+void rgb_copy(rgb *src, rgb *dst);
+void hsv_copy(hsv *src, hsv *dst);
 
 #endif

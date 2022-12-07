@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include "app_util.h"
+#include "pwm_abs.h"
 
 // <0=> 16 MHz 
 // <1=> 8 MHz 
@@ -18,10 +19,18 @@
 
 typedef float (*main_pwm_math_fn)(float input, uint32_t top_value);
 
+extern pwm_abs_cnxt_t rgb_cnxt;
+extern pwm_abs_cnxt_t led_cnxt;
+
 extern main_pwm_math_fn rgb_math_fn;
 extern main_pwm_math_fn led_math_fn;
 
 extern uint8_t func_hold;
+
+
+// Input [0 - 1]
+// Output 0
+float off_func(float input, uint32_t top_value);
 
 // Input [0 - 1]
 // Output [0 - top_value]
@@ -38,9 +47,9 @@ float stair_func(float input, uint32_t top_value);
 /**
  * @brief Function for initializing PWM.
  */
-void main_pwm_init(void);
+void main_pwm_init(pwm_abs_update_handler rgb_handler, pwm_abs_update_handler led_handler);
 
-void pwm_led_value(uint32_t pin, float duty_cycle);
+
 
 
 #endif

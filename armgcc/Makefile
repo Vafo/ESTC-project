@@ -5,7 +5,7 @@ DFU_PACKAGE      := $(OUTPUT_DIRECTORY)/nrf52840_xxaa.dfu
 DFU_PORT         ?= /dev/ttyACM0
 
 GNU_INSTALL_ROOT ?= $(dir $(shell (which arm-none-eabi-gcc)))
-SDK_ROOT ?= $(HOME)/dev/embedded/base/esl-nsdk # SUPPOSED TO BE CHANGED LOCALLY
+SDK_ROOT ?= $(HOME)/dev/embedded/base/esl-nsdk
 
 PROJ_DIR ?= ../
 
@@ -57,9 +57,11 @@ SRC_FILES += \
   $(PROJ_DIR)/modules/blink_hal.c \
   $(PROJ_DIR)/modules/button_2events.c \
   $(PROJ_DIR)/modules/pwm_abs.c \
+  $(PROJ_DIR)/modules/hsv_rgb.c \
   $(PROJ_DIR)/main-parts/main_click.c \
   $(PROJ_DIR)/main-parts/main_pwm.c \
   $(PROJ_DIR)/main-parts/main_logs.c \
+  $(PROJ_DIR)/main-parts/main_picker_stm.c \
   $(PROJ_DIR)/main.c \
 
   # $(PROJ_DIR)/main-parts/main_blinking.c // Outdated pwm used

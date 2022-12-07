@@ -7,19 +7,20 @@
 #include "main_click.h"
 #include "main_logs.h"
 #include "main_pwm.h"
+#include "main_picker_stm.h"
 
 
 int main(void)
 {
     led_init_all();
-    main_pwm_init();
+    picker_stm_init();
     
     NRF_LOG_INFO("Starting up the test project with USB logging");
     main_logs_init();
     main_click_init();
     while (true)
     {   
-
+        
         LOG_BACKEND_USB_PROCESS();
         NRF_LOG_PROCESS();
     }

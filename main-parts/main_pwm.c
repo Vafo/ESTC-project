@@ -19,13 +19,17 @@
 
 uint8_t func_hold;
 
-main_pwm_math_fn rgb_math_fn;
-main_pwm_math_fn led_math_fn;
+// Input [0 - 1]
+// Output 0
+float off_func(float input, uint32_t top_value)
+{
+    return 0;
+}
 
 #define SINE_AMPLITUDE 1
 
 // Input [0 - 1]
-// Output [0 - MAIN_PWM_TOP_VALUE]
+// Output [0 - top_value]
 float sine_arc_func(float input, uint32_t top_value)
 {
     float res;
@@ -63,77 +67,42 @@ float stair_func(float input, uint32_t top_value)
 
 
 
-void pwm_handler_rgb_all(nrfx_pwm_evt_type_t event_type, pwm_abs_op_cnxt_t *operational_context, uint32_t top_value)
-{
-    float new_val;
-    float time_var;
+// void pwm_handler_rgb_all(nrfx_pwm_evt_type_t event_type, pwm_abs_op_cnxt_t *operational_context, uint32_t top_value)
+// {
+//     float new_val;
+//     float time_var;
 
-    uint32_t *period_num_ptr = &operational_context->period_num;
-    uint16_t *channels_ptr = (uint16_t *) operational_context->values.p_raw;
-    uint32_t tot_period = operational_context->tot_period;
+//     uint32_t *period_num_ptr = &operational_context->period_num;
+//     uint16_t *channels_ptr = (uint16_t *) operational_context->values.p_raw;
+//     uint32_t tot_period = operational_context->tot_period;
 
-    switch (event_type)
-    {
-    case NRFX_PWM_EVT_END_SEQ0:
-    case NRFX_PWM_EVT_END_SEQ1:
-        if(func_hold)
-        {
-            time_var = ((float) *period_num_ptr / tot_period);
-            new_val = rgb_math_fn(time_var, top_value);
-            // NRF_LOG_INFO("Setting value %d PERIOD %d / %d", (uint16_t) new_val, *period_num_ptr, tot_period);
-            for(int i = 0; i < 3; i++)
-            {
-                channels_ptr[i] = (uint16_t) new_val;
-            }
+//     switch (event_type)
+//     {
+//     case NRFX_PWM_EVT_END_SEQ0:
+//     case NRFX_PWM_EVT_END_SEQ1:
+//         if(func_hold)
+//         {
+//             time_var = ((float) *period_num_ptr / tot_period);
+//             new_val = rgb_math_fn(time_var, top_value);
+//             // NRF_LOG_INFO("Setting value %d PERIOD %d / %d", (uint16_t) new_val, *period_num_ptr, tot_period);
+//             for(int i = 0; i < 3; i++)
+//             {
+//                 channels_ptr[i] = (uint16_t) new_val;
+//             }
 
-            if(++(*period_num_ptr) >= tot_period)
-            {
-                *period_num_ptr = 0;
-            }
+//             if(++(*period_num_ptr) >= tot_period)
+//             {
+//                 *period_num_ptr = 0;
+//             }
 
-        }
-        break;
+//         }
+//         break;
     
-    default:
-        // NRF_LOG_INFO("Unhandled event %d", event);
-        break;
-    }
-}
-
-
-void pwm_handler_led(nrfx_pwm_evt_type_t event_type, pwm_abs_op_cnxt_t *operational_context, uint32_t top_value)
-{
-    float new_val;
-    float time_var;
-
-    uint32_t *period_num_ptr = &operational_context->period_num;
-    uint16_t *channels_ptr = (uint16_t *) operational_context->values.p_common;
-    uint32_t tot_period = operational_context->tot_period;
-
-    switch (event_type)
-    {
-    case NRFX_PWM_EVT_END_SEQ0:
-    case NRFX_PWM_EVT_END_SEQ1:
-        // if(func_hold)
-        {
-            time_var = ((float) *period_num_ptr / tot_period);
-            new_val = led_math_fn(time_var, top_value);
-            // NRF_LOG_INFO("Setting value %d PERIOD %d / %d", (uint16_t) new_val, *period_num_ptr, tot_period);
-            channels_ptr[0] = (uint16_t) new_val;
-
-            if(++(*period_num_ptr) >= tot_period)
-            {
-                *period_num_ptr = 0;
-            }
-
-        }
-        break;
-    
-    default:
-        // NRF_LOG_INFO("Unhandled event %d", event);
-        break;
-    }
-}
+//     default:
+//         // NRF_LOG_INFO("Unhandled event %d", event);
+//         break;
+//     }
+// }
 
 #define RGB_TOP_VALUE 1000
 
@@ -166,7 +135,7 @@ pwm_abs_cnxt_t rgb_cnxt = {
     .instance = &pwm_instance_rgb,
     .config = &pwm_config_rgb,
     .seq = &pwm_seq_rgb,
-    .handler = pwm_handler_rgb_all,
+    .handler = NULL,
     .time_ms = 2500,
 };
 
@@ -202,16 +171,17 @@ pwm_abs_cnxt_t led_cnxt = {
     .instance = &pwm_instance_led0,
     .config = &pwm_config_led0,
     .seq = &pwm_seq_led0,
-    .handler = pwm_handler_led,
+    .handler = NULL,
     .time_ms = 1000,
 };
 
 // use user sequence
 
-void main_pwm_init(void)
-{
-    led_math_fn = stair_func;
-    rgb_math_fn = sine_arc_func;
+void main_pwm_init(pwm_abs_update_handler rgb_handler, pwm_abs_update_handler led_handler)
+{   
+    rgb_cnxt.handler = rgb_handler;
+    led_cnxt.handler = led_handler;
+
     pwm_abs_init(&rgb_cnxt);
     pwm_abs_init(&led_cnxt);
 }

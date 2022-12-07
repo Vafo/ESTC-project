@@ -42,7 +42,7 @@ typedef struct
 
 
 nrfx_err_t pwm_abs_init(pwm_abs_cnxt_t *cnxt);
-void pwm_abs_update_func(pwm_abs_cnxt_t *cnxt, pwm_abs_update_handler new_handler);
+void pwm_abs_change_func(pwm_abs_cnxt_t *cnxt, pwm_abs_update_handler new_handler);
 nrfx_err_t pwm_abs_uninit(pwm_abs_cnxt_t *cnxt);
 
 
