@@ -2,23 +2,25 @@
 #include <stdint.h>
 #include "boards.h"
 
-#include "main_blinking.h"
+#include "blink_hal.h"
+
 #include "main_click.h"
 #include "main_logs.h"
-#include "main_click.h"
+#include "main_pwm.h"
+#include "main_picker_stm.h"
 
 
 int main(void)
 {
     led_init_all();
-    pwm_led_init();
+    picker_stm_init();
     
     NRF_LOG_INFO("Starting up the test project with USB logging");
     main_logs_init();
     main_click_init();
     while (true)
     {   
-
+        
         LOG_BACKEND_USB_PROCESS();
         NRF_LOG_PROCESS();
     }

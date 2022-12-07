@@ -1,7 +1,6 @@
 #include "main_click.h"
-#include "main_blinking.h"
 #include "main_logs.h"
-#include "main_pwm.h"
+#include "main_picker_stm.h"
 
 void main_click_init()
 {
@@ -13,19 +12,17 @@ void main_click_init()
 
 void on_press()
 {
-    custom_blink_f = vary_intensity;
-    func_hold = 1;
+    picker_stm_on_press();
 }
 
 void on_release()
 {
-    custom_blink_f = discrete_blink;
-    intensity_hold = 1;
-    func_hold = 0;
+    picker_stm_on_release();
 }
 
 void on_double_click()
 {
     NRF_LOG_INFO("Double click happened!!!!");
-    blink_hold ^= 1;
+
+    picker_stm_on_double_click();
 }
