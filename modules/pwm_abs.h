@@ -8,11 +8,6 @@
 /** @brief PWM Base clock index. */
 #define MAIN_PWM_BASE_CLOCK 4
 
-/** @brief PWM Top value. */
-#define MAIN_PWM_TOP_VALUE 1000
-/** @brief Function duration in ms*/
-#define MAIN_PWM_FNC_DURATION 2500
-
 /** 
  * @brief PWM Base clock frequency: index to Hz. 
  *        Formula: 16Mhz / 2^idx
@@ -23,7 +18,8 @@
 
 typedef struct 
 {
-    uint16_t channels[4];
+    nrf_pwm_values_t values;
+    uint16_t length;
     uint32_t period_num;
     uint32_t tot_period;
 } pwm_abs_op_cnxt_t;
@@ -38,7 +34,7 @@ typedef struct
 
     nrfx_pwm_t *instance;
     nrfx_pwm_config_t *config;
-    nrf_pwm_sequence_t seq;
+    nrf_pwm_sequence_t *seq;
 
     pwm_abs_update_handler handler;
     pwm_abs_time_ms time_ms;

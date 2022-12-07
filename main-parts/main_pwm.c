@@ -64,7 +64,7 @@ void pwm_handler_half_sine(nrfx_pwm_evt_type_t event_type, pwm_abs_op_cnxt_t *op
     float time_var;
 
     uint32_t *period_num_ptr = &operational_context->period_num;
-    uint16_t *channels_ptr = (uint16_t *) &operational_context->channels;
+    uint16_t *channels_ptr = (uint16_t *) operational_context->values.p_raw;
     uint32_t tot_period = operational_context->tot_period;
 
     switch (event_type)
@@ -102,7 +102,7 @@ void solo_handler(nrfx_pwm_evt_type_t event_type, pwm_abs_op_cnxt_t *operational
     float time_var;
 
     uint32_t *period_num_ptr = &operational_context->period_num;
-    uint16_t *channels_ptr = (uint16_t *) &operational_context->channels;
+    uint16_t *channels_ptr = (uint16_t *) operational_context->values.p_common;
     uint32_t tot_period = operational_context->tot_period;
 
     switch (event_type)
@@ -130,6 +130,8 @@ void solo_handler(nrfx_pwm_evt_type_t event_type, pwm_abs_op_cnxt_t *operational
     }
 }
 
+#define RGB_TOP_VALUE 1000
+
 static nrfx_pwm_t pwm_instance_rgb = NRFX_PWM_INSTANCE(0);
 static nrfx_pwm_config_t pwm_config_rgb = {                                 \
     .output_pins  = { LED_2R_GPIO,                                          \
@@ -139,18 +141,32 @@ static nrfx_pwm_config_t pwm_config_rgb = {                                 \
     .irq_priority = NRFX_PWM_DEFAULT_CONFIG_IRQ_PRIORITY,                   \
     .base_clock   = (nrf_pwm_clk_t)MAIN_PWM_BASE_CLOCK,                     \
     .count_mode   = (nrf_pwm_mode_t)NRFX_PWM_DEFAULT_CONFIG_COUNT_MODE,     \
-    .top_value    = MAIN_PWM_TOP_VALUE,                                     \
-    .load_mode    = (nrf_pwm_dec_load_t)NRF_PWM_LOAD_INDIVIDUAL,            \
+    .top_value    = RGB_TOP_VALUE,                                     \
+    .load_mode    = (nrf_pwm_dec_load_t)NRF_PWM_LOAD_WAVE_FORM,            \
     .step_mode    = (nrf_pwm_dec_step_t)NRFX_PWM_DEFAULT_CONFIG_STEP_MODE,  \
+};
+
+static nrf_pwm_values_wave_form_t rgb_val;
+
+static nrf_pwm_sequence_t pwm_seq_rgb = {
+    .values= {
+        .p_wave_form = &rgb_val
+    },
+    .length = 4,
+    .repeats = 0,
+    .end_delay = 0
 };
 
 static pwm_abs_cnxt_t rgb_cnxt = {
     .instance = &pwm_instance_rgb,
     .config = &pwm_config_rgb,
+    .seq = &pwm_seq_rgb,
     .handler = pwm_handler_half_sine,
-    .time_ms = 5000,
+    .time_ms = 500,
 };
 
+
+#define LED_TOP_VALUE 1000
 
 static nrfx_pwm_t pwm_instance_led0 = NRFX_PWM_INSTANCE(1);
 static nrfx_pwm_config_t pwm_config_led0 = {                                \
@@ -161,16 +177,28 @@ static nrfx_pwm_config_t pwm_config_led0 = {                                \
     .irq_priority = NRFX_PWM_DEFAULT_CONFIG_IRQ_PRIORITY,                   \
     .base_clock   = (nrf_pwm_clk_t)MAIN_PWM_BASE_CLOCK,                     \
     .count_mode   = (nrf_pwm_mode_t)NRFX_PWM_DEFAULT_CONFIG_COUNT_MODE,     \
-    .top_value    = MAIN_PWM_TOP_VALUE,                                     \
+    .top_value    = LED_TOP_VALUE,                                     \
     .load_mode    = (nrf_pwm_dec_load_t)NRF_PWM_LOAD_COMMON,                \
     .step_mode    = (nrf_pwm_dec_step_t)NRFX_PWM_DEFAULT_CONFIG_STEP_MODE,  \
+};
+
+static nrf_pwm_values_common_t led0_val;
+
+static nrf_pwm_sequence_t pwm_seq_led0 = {
+    .values = {
+        .p_common = &led0_val
+    },
+    .length = 1,
+    .repeats = 0,
+    .end_delay = 0 
 };
 
 static pwm_abs_cnxt_t led_cnxt = {
     .instance = &pwm_instance_led0,
     .config = &pwm_config_led0,
+    .seq = &pwm_seq_led0,
     .handler = solo_handler,
-    .time_ms = 1000,
+    .time_ms = 5000,
 };
 
 // use user sequence
@@ -178,7 +206,7 @@ static pwm_abs_cnxt_t led_cnxt = {
 void pwm_led_init(void)
 {
     pwm_abs_init(&rgb_cnxt);
-    // pwm_abs_init(&led_cnxt);
+    pwm_abs_init(&led_cnxt);
 }
 
 
