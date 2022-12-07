@@ -30,6 +30,7 @@ void picker_stm_init();
 void picker_stm_next_state();
 void picker_stm_set_state(picker_stm_mode_t new_state);
 
+// Rename to press_handler etc.
 void picker_stm_on_press();
 void picker_stm_on_release();
 void picker_stm_on_double_click();

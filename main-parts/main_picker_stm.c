@@ -7,25 +7,23 @@ static main_pwm_math_fn led_funcs[] = {
     off_func,
     stair_func,
     sine_arc_func,
-    saw_func
+    saw_func    // change to on_func
 };
 
 main_pwm_math_fn led_math_fn;
 
 
 picker_stm_cnxt_t stm_inst;
-
+// Delete useless (dead) comments
 static void pwm_handler_rgb(nrfx_pwm_evt_type_t event_type, pwm_abs_op_cnxt_t *operational_context, uint32_t top_value)
 {
     float time_var;
     float new_val;
 
     uint32_t *period_num_ptr = &operational_context->period_num;
-    // uint16_t *channels_ptr = (uint16_t *) operational_context->values.p_common;
     nrf_pwm_values_wave_form_t *values_wave = (nrf_pwm_values_wave_form_t *) operational_context->values.p_wave_form;
     uint32_t tot_period = operational_context->tot_period;
 
-    // float *stm_rgb_raw = (float *) &stm_inst.rgb;
 
     uint16_t r, g, b;
 
@@ -40,25 +38,12 @@ static void pwm_handler_rgb(nrfx_pwm_evt_type_t event_type, pwm_abs_op_cnxt_t *o
                 hsv_update_component(&(stm_inst.hsv), stm_inst.cur_component, new_val);
                 hsv_to_rgb(&(stm_inst.hsv), &stm_inst.rgb);
                 
-                // NRF_LOG_INFO("H : %f | S : %f | V : %f", stm_inst.hsv.h, stm_inst.hsv.s, stm_inst.hsv.v);
-
-                // for(int rgb_component = 0; rgb_component < 3; rgb_component++)
-                // {
-                //     channels_ptr[rgb_component] = stm_rgb_raw[rgb_component] * top_value;
-                // }
 
                 r = values_wave->channel_0 = stm_inst.rgb.r * top_value;
                 g = values_wave->channel_1 = stm_inst.rgb.g * top_value;
                 b = values_wave->channel_2 = stm_inst.rgb.b * top_value;
 
-                // values_wave->channel_0 = stm_inst.rgb.r * top_value;
-                // values_wave->channel_1 = stm_inst.rgb.g * top_value;
-                // values_wave->channel_2 = stm_inst.rgb.b * top_value;
-
-                // NRF_LOG_INFO(NRF_LOG_FLOAT_MARKER " R", NRF_LOG_FLOAT(stm_inst.rgb.r));
-                // NRF_LOG_INFO(NRF_LOG_FLOAT_MARKER " G", NRF_LOG_FLOAT(stm_inst.rgb.g));
-                // NRF_LOG_INFO(NRF_LOG_FLOAT_MARKER " B", NRF_LOG_FLOAT(stm_inst.rgb.b));
-                // NRF_LOG_INFO("---------------------------------------------------")
+        
                 NRF_LOG_INFO("R : %d | G : %d | B : %d | new_val " NRF_LOG_FLOAT_MARKER, r, g, b, NRF_LOG_FLOAT(new_val));
                 if(++(*period_num_ptr) >= tot_period)
                 {
@@ -83,6 +68,7 @@ static void pwm_handler_led(nrfx_pwm_evt_type_t event_type, pwm_abs_op_cnxt_t *o
     uint32_t *period_num_ptr = &operational_context->period_num;
     uint16_t *channels_ptr = (uint16_t *) operational_context->values.p_common;
     uint32_t tot_period = operational_context->tot_period;
+    // Rename to total_period
 
     switch (event_type)
     {
