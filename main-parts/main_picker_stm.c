@@ -18,6 +18,7 @@ picker_stm_cnxt_t stm_inst;
 static void pwm_handler_rgb(nrfx_pwm_evt_type_t event_type, pwm_abs_op_cnxt_t *operational_context, uint32_t top_value)
 {
     float time_var;
+    float new_val;
 
     uint32_t *period_num_ptr = &operational_context->period_num;
     // uint16_t *channels_ptr = (uint16_t *) operational_context->values.p_common;
@@ -26,7 +27,7 @@ static void pwm_handler_rgb(nrfx_pwm_evt_type_t event_type, pwm_abs_op_cnxt_t *o
 
     // float *stm_rgb_raw = (float *) &stm_inst.rgb;
 
-    // uint16_t r, g, b;
+    uint16_t r, g, b;
 
     switch (event_type)
     {
@@ -35,8 +36,8 @@ static void pwm_handler_rgb(nrfx_pwm_evt_type_t event_type, pwm_abs_op_cnxt_t *o
             if(func_hold)
             {
                 time_var = ((float) *period_num_ptr / tot_period);
-
-                hsv_update_component(&(stm_inst.hsv), stm_inst.cur_component, time_var);
+                new_val = saw_func(time_var, 1);
+                hsv_update_component(&(stm_inst.hsv), stm_inst.cur_component, new_val);
                 hsv_to_rgb(&(stm_inst.hsv), &stm_inst.rgb);
                 
                 // NRF_LOG_INFO("H : %f | S : %f | V : %f", stm_inst.hsv.h, stm_inst.hsv.s, stm_inst.hsv.v);
@@ -46,19 +47,19 @@ static void pwm_handler_rgb(nrfx_pwm_evt_type_t event_type, pwm_abs_op_cnxt_t *o
                 //     channels_ptr[rgb_component] = stm_rgb_raw[rgb_component] * top_value;
                 // }
 
-                // r = values_wave->channel_0 = stm_inst.rgb.r * top_value;
-                // g = values_wave->channel_1 = stm_inst.rgb.g * top_value;
-                // b = values_wave->channel_2 = stm_inst.rgb.b * top_value;
+                r = values_wave->channel_0 = stm_inst.rgb.r * top_value;
+                g = values_wave->channel_1 = stm_inst.rgb.g * top_value;
+                b = values_wave->channel_2 = stm_inst.rgb.b * top_value;
 
-                values_wave->channel_0 = stm_inst.rgb.r * top_value;
-                values_wave->channel_1 = stm_inst.rgb.g * top_value;
-                values_wave->channel_2 = stm_inst.rgb.b * top_value;
+                // values_wave->channel_0 = stm_inst.rgb.r * top_value;
+                // values_wave->channel_1 = stm_inst.rgb.g * top_value;
+                // values_wave->channel_2 = stm_inst.rgb.b * top_value;
 
-                NRF_LOG_INFO(NRF_LOG_FLOAT_MARKER " R", NRF_LOG_FLOAT(stm_inst.rgb.r));
-                NRF_LOG_INFO(NRF_LOG_FLOAT_MARKER " G", NRF_LOG_FLOAT(stm_inst.rgb.g));
-                NRF_LOG_INFO(NRF_LOG_FLOAT_MARKER " B", NRF_LOG_FLOAT(stm_inst.rgb.b));
-                NRF_LOG_INFO("---------------------------------------------------")
-                // NRF_LOG_INFO("R : %d | G : %d | B : %d | new_val " NRF_LOG_FLOAT_MARKER, r, g, b, NRF_LOG_FLOAT(time_var));
+                // NRF_LOG_INFO(NRF_LOG_FLOAT_MARKER " R", NRF_LOG_FLOAT(stm_inst.rgb.r));
+                // NRF_LOG_INFO(NRF_LOG_FLOAT_MARKER " G", NRF_LOG_FLOAT(stm_inst.rgb.g));
+                // NRF_LOG_INFO(NRF_LOG_FLOAT_MARKER " B", NRF_LOG_FLOAT(stm_inst.rgb.b));
+                // NRF_LOG_INFO("---------------------------------------------------")
+                NRF_LOG_INFO("R : %d | G : %d | B : %d | new_val " NRF_LOG_FLOAT_MARKER, r, g, b, NRF_LOG_FLOAT(new_val));
                 if(++(*period_num_ptr) >= tot_period)
                 {
                     *period_num_ptr = 0;

@@ -72,11 +72,16 @@ void hsv_copy(hsv *src, hsv *dst)
     dst->v = src->v;
 }
 
+static float mod_float(float dividend, float divisor)
+{
+    int int_part = dividend/divisor;
+    return dividend - int_part * divisor;
+}
+
 void hsv_to_rgb(hsv *hsv_src, rgb *rgb_dest)
 {
     float value;
-    float C, X, M;
-    unsigned int H;
+    float C, X, M, H;
     rgb rgb_tmp = {
         .r = 0,
         .g = 0,
@@ -86,10 +91,11 @@ void hsv_to_rgb(hsv *hsv_src, rgb *rgb_dest)
     value = hsv_src->v;
     H = hsv_src->h * 6;     // h * 360 / 60 = h * 6
     C = value * hsv_src->s;
-    X = C * ( 1 - ABS( (H % 2) - 1 )  );
+    X = C * ( 1 - ABS( (mod_float(H, 2)) - 1 )  );
     M = value - C;
 
-    switch (H)
+    unsigned int H_int = H;
+    switch (H_int)
     {
         case 0:
             rgb_set_values(&rgb_tmp, C, X, 0);

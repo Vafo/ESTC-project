@@ -136,7 +136,7 @@ pwm_abs_cnxt_t rgb_cnxt = {
     .config = &pwm_config_rgb,
     .seq = &pwm_seq_rgb,
     .handler = NULL,
-    .time_ms = 2500,
+    .time_ms = 7000,
 };
 
 
