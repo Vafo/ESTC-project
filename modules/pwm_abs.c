@@ -103,3 +103,9 @@ void pwm_abs_change_func(pwm_abs_cnxt_t *cnxt, pwm_abs_update_handler new_handle
     _init_op_cnxt(cnxt);
 
 }
+
+void pwm_abs_set_period(pwm_abs_cnxt_t *cnxt, uint32_t period)
+{
+    ASSERT(period >= 0);
+    cnxt->op_cnxt.period_num = period;
+}

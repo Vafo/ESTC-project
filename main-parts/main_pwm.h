@@ -33,6 +33,10 @@ extern uint8_t func_hold;
 float off_func(float input, uint32_t top_value);
 
 // Input [0 - 1]
+// Output 1
+float on_func(float input, uint32_t top_value);
+
+// Input [0 - 1]
 // Output [0 - top_value]
 float sine_arc_func(float input, uint32_t top_value);
 

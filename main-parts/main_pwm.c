@@ -26,6 +26,13 @@ float off_func(float input, uint32_t top_value)
     return 0;
 }
 
+// Input [0 - 1]
+// Output top_value
+float on_func(float input, uint32_t top_value)
+{
+    return top_value;
+}
+
 #define SINE_AMPLITUDE 1
 
 // Input [0 - 1]
