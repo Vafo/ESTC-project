@@ -19,8 +19,8 @@
 
 typedef float (*main_pwm_math_fn)(float input, uint32_t top_value);
 
-extern pwm_abs_cnxt_t rgb_cnxt;
-extern pwm_abs_cnxt_t led_cnxt;
+extern pwm_abs_ctx_t rgb_ctx;
+extern pwm_abs_ctx_t led_ctx;
 
 extern main_pwm_math_fn rgb_math_fn;
 extern main_pwm_math_fn led_math_fn;

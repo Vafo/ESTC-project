@@ -1,4 +1,4 @@
-#include "main_picker_stm.h"
+#include "main_picker_fsm.h"
 #include "main_logs.h"
 
 #include "blink_hal.h"
@@ -9,16 +9,16 @@ static main_pwm_math_fn led_funcs[] = {
     off_func,
     stair_func,
     sine_arc_func,
-    on_func    // change to on_func
+    on_func
 };
 
 main_pwm_math_fn led_math_fn;
 
 
-picker_stm_cnxt_t stm_inst;
+picker_fsm_ctx_t fsm_inst;
 // Delete useless (dead) comments
 
-static void pwm_handler_rgb(nrfx_pwm_evt_type_t event_type, pwm_abs_op_cnxt_t *operational_context, uint32_t top_value)
+static void pwm_handler_rgb(nrfx_pwm_evt_type_t event_type, pwm_abs_op_ctx_t *operational_context, uint32_t top_value)
 {
     float time_var;
     float new_val = 0;
@@ -30,9 +30,9 @@ static void pwm_handler_rgb(nrfx_pwm_evt_type_t event_type, pwm_abs_op_cnxt_t *o
 
     uint16_t r, g, b;
 
-    if(!stm_inst.updated)
+    if(!fsm_inst.updated)
     {
-        *period_num_ptr = stm_inst.set_period_to * tot_period;
+        *period_num_ptr = fsm_inst.set_period_to * tot_period;
     }
 
     switch (event_type)
@@ -43,25 +43,25 @@ static void pwm_handler_rgb(nrfx_pwm_evt_type_t event_type, pwm_abs_op_cnxt_t *o
             {
                 time_var = ((float) *period_num_ptr / tot_period);
                 new_val = saw_func(time_var, 1);
-                hsv_update_component(&(stm_inst.hsv), stm_inst.cur_component, new_val);
+                hsv_update_component(&(fsm_inst.hsv), fsm_inst.cur_component, new_val);
 
                 if(++(*period_num_ptr) >= tot_period)
                 {
                     *period_num_ptr = 0;
                 }
                 
-                stm_inst.updated = 0;
+                fsm_inst.updated = 0;
             }
             
             
-            if(!stm_inst.updated)
+            if(!fsm_inst.updated)
             {
-                hsv_to_rgb(&(stm_inst.hsv), &stm_inst.rgb);
+                hsv_to_rgb(&(fsm_inst.hsv), &fsm_inst.rgb);
             
-                r = values_wave->channel_0 = stm_inst.rgb.r * top_value;
-                g = values_wave->channel_1 = stm_inst.rgb.g * top_value;
-                b = values_wave->channel_2 = stm_inst.rgb.b * top_value;
-                stm_inst.updated = 1;
+                r = values_wave->channel_0 = fsm_inst.rgb.r * top_value;
+                g = values_wave->channel_1 = fsm_inst.rgb.g * top_value;
+                b = values_wave->channel_2 = fsm_inst.rgb.b * top_value;
+                fsm_inst.updated = 1;
             }
 
             if(func_hold)
@@ -79,33 +79,31 @@ static void pwm_handler_rgb(nrfx_pwm_evt_type_t event_type, pwm_abs_op_cnxt_t *o
 
 }
 
-static void pwm_handler_led(nrfx_pwm_evt_type_t event_type, pwm_abs_op_cnxt_t *operational_context, uint32_t top_value)
+static void pwm_handler_led(nrfx_pwm_evt_type_t event_type, pwm_abs_op_ctx_t *operational_context, uint32_t top_value)
 {
     float new_val;
     float time_var;
 
     uint32_t *period_num_ptr = &operational_context->period_num;
     uint16_t *channels_ptr = (uint16_t *) operational_context->values.p_common;
-    uint32_t tot_period = operational_context->tot_period;
+    uint32_t total_period = operational_context->tot_period;
     // Rename to total_period
 
     switch (event_type)
     {
         case NRFX_PWM_EVT_END_SEQ0:
         case NRFX_PWM_EVT_END_SEQ1:
-            // if(func_hold)
+            
+            time_var = ((float) *period_num_ptr / total_period);
+            new_val = led_math_fn(time_var, top_value);
+            // NRF_LOG_INFO("Setting value %d PERIOD %d / %d", (uint16_t) new_val, *period_num_ptr, tot_period);
+            channels_ptr[0] = (uint16_t) new_val;
+
+            if(++(*period_num_ptr) >= total_period)
             {
-                time_var = ((float) *period_num_ptr / tot_period);
-                new_val = led_math_fn(time_var, top_value);
-                // NRF_LOG_INFO("Setting value %d PERIOD %d / %d", (uint16_t) new_val, *period_num_ptr, tot_period);
-                channels_ptr[0] = (uint16_t) new_val;
-
-                if(++(*period_num_ptr) >= tot_period)
-                {
-                    *period_num_ptr = 0;
-                }
-
+                *period_num_ptr = 0;
             }
+
             break;
         
         default:
@@ -114,7 +112,7 @@ static void pwm_handler_led(nrfx_pwm_evt_type_t event_type, pwm_abs_op_cnxt_t *o
     }
 }
 
-static void circular_increment(picker_stm_mode_t *val, picker_stm_mode_t top)
+static void circular_increment(picker_fsm_mode_t *val, picker_fsm_mode_t top)
 {
     (*val)++;
     if( *val >= top || *val < 0 )
@@ -123,29 +121,29 @@ static void circular_increment(picker_stm_mode_t *val, picker_stm_mode_t top)
     }
 }
 
-static void picker_state_exec(picker_stm_mode_t mode)
+static void picker_state_exec(picker_fsm_mode_t mode)
 {
     float cur_val = 0;
     switch (mode)
     {
         case DISPLAY_MODE:
-            stm_inst.cur_component = -1;
+            fsm_inst.cur_component = -1;
             cur_val = 0;
             break;
 
         case HUE_MODIFICATION_MODE:
-            stm_inst.cur_component = HSV_H_IDX;
-            cur_val = stm_inst.hsv.h;
+            fsm_inst.cur_component = HSV_H_IDX;
+            cur_val = fsm_inst.hsv.h;
             break;
             
         case SATURATION_MODIFICATION_MODE:
-            stm_inst.cur_component = HSV_S_IDX;
-            cur_val = stm_inst.hsv.s;
+            fsm_inst.cur_component = HSV_S_IDX;
+            cur_val = fsm_inst.hsv.s;
             break;
             
         case BRIGHTNESS_MODIFICATION_MODE:
-            stm_inst.cur_component = HSV_V_IDX;
-            cur_val = stm_inst.hsv.v;
+            fsm_inst.cur_component = HSV_V_IDX;
+            cur_val = fsm_inst.hsv.v;
             break;
 
         case PICKER_MODES_NUMBER:
@@ -155,65 +153,66 @@ static void picker_state_exec(picker_stm_mode_t mode)
             break;
     }
     NRF_LOG_INFO("OUT OF STATE EXEC");
-    
+    // I can not update here fsm_inst.rgb_ctx->op_ctx.period_num directly
+    // Why??
     cur_val /= 2;
-    stm_inst.updated = 0;
-    stm_inst.set_period_to = cur_val;
+    fsm_inst.updated = 0;
+    fsm_inst.set_period_to = cur_val;
 
     led_math_fn = led_funcs[mode];
 }   
 
 
-void picker_stm_init()
+void picker_fsm_init()
 {
-    stm_inst.cur_mode = DISPLAY_MODE;
+    fsm_inst.cur_mode = DISPLAY_MODE;
     float last_2_digits = ((float) LAST_2_DIGITS) / 100;
-    hsv_set_values(&stm_inst.hsv, last_2_digits, 1, 1);
+    hsv_set_values(&fsm_inst.hsv, last_2_digits, 1, 1);
 
     func_hold = 0;
 
-    stm_inst.led_cnxt = &led_cnxt;
-    stm_inst.rgb_cnxt = &rgb_cnxt;
-    stm_inst.set_period_to = 0;
-    stm_inst.updated = 0;
+    fsm_inst.led_ctx = &led_ctx;
+    fsm_inst.rgb_ctx = &rgb_ctx;
+    fsm_inst.set_period_to = 0;
+    fsm_inst.updated = 0;
 
     main_pwm_init(pwm_handler_rgb, pwm_handler_led);
     picker_state_exec(DISPLAY_MODE);
 }
 
 
-void picker_stm_next_state() {
-    circular_increment(&stm_inst.cur_mode, PICKER_MODES_NUMBER);
-    picker_state_exec(stm_inst.cur_mode);
+void picker_fsm_next_state() {
+    circular_increment(&fsm_inst.cur_mode, PICKER_MODES_NUMBER);
+    picker_state_exec(fsm_inst.cur_mode);
 
-    NRF_LOG_INFO("CHANGED STATE TO %d", stm_inst.cur_mode);
+    NRF_LOG_INFO("CHANGED STATE TO %d", fsm_inst.cur_mode);
 }
 
-void picker_stm_set_state(picker_stm_mode_t new_mode)
+void picker_fsm_set_state(picker_fsm_mode_t new_mode)
 {
     ASSERT(new_mode >= 0 && new_mode < PICKER_MODES_NUMBER);
-    stm_inst.cur_mode = new_mode;
+    fsm_inst.cur_mode = new_mode;
     picker_state_exec(new_mode);
 }
 
-void picker_stm_on_press()
+void picker_fsm_press_handler()
 {
-    if(stm_inst.cur_mode != DISPLAY_MODE)
+    if(fsm_inst.cur_mode != DISPLAY_MODE)
     {
         func_hold = 1;
     }
 }
 
-void picker_stm_on_release()
+void picker_fsm_release_handler()
 {
 
-    if(stm_inst.cur_mode != DISPLAY_MODE)
+    if(fsm_inst.cur_mode != DISPLAY_MODE)
     {
         func_hold = 0;
     }
 }
 
-void picker_stm_on_double_click()
+void picker_fsm_double_click_handler()
 {
-    picker_stm_next_state();
+    picker_fsm_next_state();
 }

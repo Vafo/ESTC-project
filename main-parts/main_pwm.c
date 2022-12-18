@@ -74,7 +74,7 @@ float stair_func(float input, uint32_t top_value)
 
 
 
-// void pwm_handler_rgb_all(nrfx_pwm_evt_type_t event_type, pwm_abs_op_cnxt_t *operational_context, uint32_t top_value)
+// void pwm_handler_rgb_all(nrfx_pwm_evt_type_t event_type, pwm_abs_op_ctx_t *operational_context, uint32_t top_value)
 // {
 //     float new_val;
 //     float time_var;
@@ -138,7 +138,7 @@ static nrf_pwm_sequence_t pwm_seq_rgb = {
     .end_delay = 0
 };
 
-pwm_abs_cnxt_t rgb_cnxt = {
+pwm_abs_ctx_t rgb_ctx = {
     .instance = &pwm_instance_rgb,
     .config = &pwm_config_rgb,
     .seq = &pwm_seq_rgb,
@@ -174,7 +174,7 @@ static nrf_pwm_sequence_t pwm_seq_led0 = {
     .end_delay = 0 
 };
 
-pwm_abs_cnxt_t led_cnxt = {
+pwm_abs_ctx_t led_ctx = {
     .instance = &pwm_instance_led0,
     .config = &pwm_config_led0,
     .seq = &pwm_seq_led0,
@@ -186,11 +186,11 @@ pwm_abs_cnxt_t led_cnxt = {
 
 void main_pwm_init(pwm_abs_update_handler rgb_handler, pwm_abs_update_handler led_handler)
 {   
-    rgb_cnxt.handler = rgb_handler;
-    led_cnxt.handler = led_handler;
+    rgb_ctx.handler = rgb_handler;
+    led_ctx.handler = led_handler;
 
-    pwm_abs_init(&rgb_cnxt);
-    pwm_abs_init(&led_cnxt);
+    pwm_abs_init(&rgb_ctx);
+    pwm_abs_init(&led_ctx);
 }
 
 

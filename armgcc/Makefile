@@ -5,7 +5,7 @@ DFU_PACKAGE      := $(OUTPUT_DIRECTORY)/nrf52840_xxaa.dfu
 DFU_PORT         ?= /dev/ttyACM0
 
 GNU_INSTALL_ROOT ?= $(dir $(shell (which arm-none-eabi-gcc)))
-SDK_ROOT ?= $(HOME)/dev/embedded/base/esl-nsdk
+SDK_ROOT ?= $(HOME)/devel/esl-nsdk
 
 PROJ_DIR ?= ../
 
@@ -61,7 +61,7 @@ SRC_FILES += \
   $(PROJ_DIR)/main-parts/main_click.c \
   $(PROJ_DIR)/main-parts/main_pwm.c \
   $(PROJ_DIR)/main-parts/main_logs.c \
-  $(PROJ_DIR)/main-parts/main_picker_stm.c \
+  $(PROJ_DIR)/main-parts/main_picker_fsm.c \
   $(PROJ_DIR)/main.c \
 
   # $(PROJ_DIR)/main-parts/main_blinking.c // Outdated pwm used

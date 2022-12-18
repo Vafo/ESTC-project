@@ -22,15 +22,15 @@ typedef struct
     uint16_t length;
     uint32_t period_num;
     uint32_t tot_period;
-} pwm_abs_op_cnxt_t;
+} pwm_abs_op_ctx_t;
 
 typedef uint32_t pwm_abs_time_ms;
 
-typedef void (*pwm_abs_update_handler)(nrfx_pwm_evt_type_t event_type, pwm_abs_op_cnxt_t *operational_context, uint32_t top_value);
+typedef void (*pwm_abs_update_handler)(nrfx_pwm_evt_type_t event_type, pwm_abs_op_ctx_t *operational_context, uint32_t top_value);
 
 typedef struct 
 {
-    pwm_abs_op_cnxt_t op_cnxt;
+    pwm_abs_op_ctx_t op_ctx;
 
     nrfx_pwm_t *instance;
     nrfx_pwm_config_t *config;
@@ -38,13 +38,13 @@ typedef struct
 
     pwm_abs_update_handler handler;
     pwm_abs_time_ms time_ms;
-} pwm_abs_cnxt_t;
+} pwm_abs_ctx_t;
 
 
-nrfx_err_t pwm_abs_init(pwm_abs_cnxt_t *cnxt);
-void pwm_abs_change_func(pwm_abs_cnxt_t *cnxt, pwm_abs_update_handler new_handler);
-void pwm_abs_set_period(pwm_abs_cnxt_t *cnxt, uint32_t period);
-nrfx_err_t pwm_abs_uninit(pwm_abs_cnxt_t *cnxt);
+nrfx_err_t pwm_abs_init(pwm_abs_ctx_t *ctx);
+void pwm_abs_change_func(pwm_abs_ctx_t *ctx, pwm_abs_update_handler new_handler);
+void pwm_abs_set_period(pwm_abs_ctx_t *ctx, uint32_t period);
+nrfx_err_t pwm_abs_uninit(pwm_abs_ctx_t *ctx);
 
 
 #endif
