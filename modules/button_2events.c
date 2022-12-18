@@ -54,7 +54,8 @@ APP_TIMER_DEF(debouncer_timer);
 
 // Double clicky part
 APP_TIMER_DEF(double_click_timer);
-static volatile int num_press;
+static volatile uint8_t num_press;
+static volatile uint8_t after_db_timeout;
 
 static void lfclk_request()
 {
@@ -68,10 +69,10 @@ void debouncer_timeout_handler(void *p_context)
     if(button_is_pressed(BUTTON_1))
     {
         debug_led_blue_on();
-        db_event_user_on_press();
 
         if(num_press == 0)
         {
+            after_db_timeout = 0;
             app_timer_start(double_click_timer, APP_TIMER_TICKS(DB_HOLD_MARGIN), NULL);
         }
         num_press++;
@@ -79,7 +80,10 @@ void debouncer_timeout_handler(void *p_context)
     else
     {
         debug_led_blue_off();
-        db_event_user_on_release();
+        if(after_db_timeout)
+        {
+            db_event_user_on_release();
+        }
 
         if(num_press == 2)
         {
@@ -92,6 +96,11 @@ void debouncer_timeout_handler(void *p_context)
 
 void double_click_timeout_handler()
 {
+    if(num_press == 1 && button_is_pressed(BUTTON_1))
+    {
+        db_event_user_on_press();
+        after_db_timeout = 1;
+    }
     num_press = 0;
 }
 
@@ -135,6 +144,7 @@ nrfx_err_t db_event_init(nrfx_gpiote_pin_t pin,
     err_timer = app_timer_create(&double_click_timer, APP_TIMER_MODE_SINGLE_SHOT, double_click_timeout_handler);
     APP_ERROR_CHECK(err_timer);
     num_press = 0;
+    after_db_timeout = 0;
     NRF_LOG_INFO("Double Button events: double click timer created");
 
     NRFX_ASSERT(on_press != NULL)

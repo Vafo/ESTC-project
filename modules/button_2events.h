@@ -5,7 +5,7 @@
 #include "main_logs.h"
 
 #ifndef DB_HOLD_MARGIN
-#define DB_HOLD_MARGIN 500 // ms
+#define DB_HOLD_MARGIN 400 // ms
 
 #endif
 

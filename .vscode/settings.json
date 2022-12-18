@@ -43,6 +43,15 @@
         "main_blinking.h": "c",
         "pwm_led.h": "c",
         "main_click.h": "c",
-        "main_logs.h": "c"
+        "main_logs.h": "c",
+        "app_config.h": "c",
+        "nrf_pwm.h": "c",
+        "nrf52840.h": "c",
+        "nrfx_pwm.h": "c",
+        "nrf.h": "c",
+        "nrf_peripherals.h": "c",
+        "nrf52840_peripherals.h": "c",
+        "main_pwm.h": "c",
+        "pwm_abs.h": "c"
     }
 }
