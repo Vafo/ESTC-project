@@ -23,6 +23,9 @@ typedef struct
 
     pwm_abs_cnxt_t *rgb_cnxt;
     pwm_abs_cnxt_t *led_cnxt;
+
+    uint8_t updated;
+    float set_period_to;
 } picker_stm_cnxt_t;
 
 

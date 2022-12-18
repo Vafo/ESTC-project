@@ -17,7 +17,6 @@ main_pwm_math_fn led_math_fn;
 
 picker_stm_cnxt_t stm_inst;
 // Delete useless (dead) comments
-// uint32_t set_period_to;
 
 static void pwm_handler_rgb(nrfx_pwm_evt_type_t event_type, pwm_abs_op_cnxt_t *operational_context, uint32_t top_value)
 {
@@ -31,10 +30,10 @@ static void pwm_handler_rgb(nrfx_pwm_evt_type_t event_type, pwm_abs_op_cnxt_t *o
 
     uint16_t r, g, b;
 
-    // if(!stm_inst.updated)
-    // {
-    //     *period_num_ptr = set_period_to;
-    // }
+    if(!stm_inst.updated)
+    {
+        *period_num_ptr = stm_inst.set_period_to * tot_period;
+    }
 
     switch (event_type)
     {
@@ -50,14 +49,20 @@ static void pwm_handler_rgb(nrfx_pwm_evt_type_t event_type, pwm_abs_op_cnxt_t *o
                 {
                     *period_num_ptr = 0;
                 }
+                
+                stm_inst.updated = 0;
             }
             
             
-            hsv_to_rgb(&(stm_inst.hsv), &stm_inst.rgb);
+            if(!stm_inst.updated)
+            {
+                hsv_to_rgb(&(stm_inst.hsv), &stm_inst.rgb);
             
-            r = values_wave->channel_0 = stm_inst.rgb.r * top_value;
-            g = values_wave->channel_1 = stm_inst.rgb.g * top_value;
-            b = values_wave->channel_2 = stm_inst.rgb.b * top_value;
+                r = values_wave->channel_0 = stm_inst.rgb.r * top_value;
+                g = values_wave->channel_1 = stm_inst.rgb.g * top_value;
+                b = values_wave->channel_2 = stm_inst.rgb.b * top_value;
+                stm_inst.updated = 1;
+            }
 
             if(func_hold)
             {
@@ -150,12 +155,11 @@ static void picker_state_exec(picker_stm_mode_t mode)
             break;
     }
     NRF_LOG_INFO("OUT OF STATE EXEC");
-    (void)cur_val;
-    // pwm_abs_cnxt_t *rgb_cnxt = stm_inst.rgb_cnxt;
-    // pwm_abs_op_cnxt_t *op_cnxt = &(rgb_cnxt->op_cnxt);
-    // set_period_to = cur_val * (op_cnxt->tot_period);
-    // // stm_inst.updated = 0;
     
+    cur_val /= 2;
+    stm_inst.updated = 0;
+    stm_inst.set_period_to = cur_val;
+
     led_math_fn = led_funcs[mode];
 }   
 
@@ -170,6 +174,8 @@ void picker_stm_init()
 
     stm_inst.led_cnxt = &led_cnxt;
     stm_inst.rgb_cnxt = &rgb_cnxt;
+    stm_inst.set_period_to = 0;
+    stm_inst.updated = 0;
 
     main_pwm_init(pwm_handler_rgb, pwm_handler_led);
     picker_state_exec(DISPLAY_MODE);
