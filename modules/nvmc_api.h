@@ -3,8 +3,8 @@
 
 #include "nrfx_nvmc.h"
 
-#define NVMC_API_EMPTY_WORD_SLOT ( (nvmc_api_word_t) -1)
-#define NVMC_API_EMPTY_BYTE_SLOT ( (nvmc_api_word_t) -1)
+#define NVMC_API_EMPTY_WORD_SLOT ( (nvmc_api_word_t) 0xFFFFFFFF )
+#define NVMC_API_EMPTY_BYTE_SLOT ( (nvmc_api_word_t) 0xFF)
 
 #define NVMC_API_APPLICATION_BEGIN (BOOTLOADER_START_ADDR - NRF_DFU_APP_DATA_AREA_SIZE)
 #define NVMC_API_APPLICATION_END (BOOTLOADER_START_ADDR)

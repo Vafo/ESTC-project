@@ -45,6 +45,7 @@ ret_code_t picker_fsm_agent_init(message_core_t *msg_core)
     message_agent_listen_to(&picker_fsm_agent_ctx, PRESS_EVENT);
     message_agent_listen_to(&picker_fsm_agent_ctx, RELEASE_EVENT);
     message_agent_listen_to(&picker_fsm_agent_ctx, DOUBLE_CLICK_EVENT);
+    message_agent_listen_to(&picker_fsm_agent_ctx, LOADED_LED_EVENT);
     
     return NRF_SUCCESS;
 }

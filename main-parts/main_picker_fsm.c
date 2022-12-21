@@ -177,7 +177,7 @@ void picker_fsm_init()
     fsm_inst.updated = 0;
 
     main_pwm_init(pwm_handler_rgb, pwm_handler_led);
-    picker_fsm_get_hsv();
+    // picker_fsm_get_hsv();
     picker_state_exec(DISPLAY_MODE);
 }
 
