@@ -177,13 +177,21 @@ void picker_fsm_init()
     fsm_inst.updated = 0;
 
     main_pwm_init(pwm_handler_rgb, pwm_handler_led);
+    picker_fsm_get_hsv();
     picker_state_exec(DISPLAY_MODE);
 }
 
 
-void picker_fsm_next_state() {
+void picker_fsm_next_state() 
+{
+    picker_fsm_mode_t prev_mode = fsm_inst.cur_mode;
     circular_increment(&fsm_inst.cur_mode, PICKER_MODES_NUMBER);
     picker_state_exec(fsm_inst.cur_mode);
+
+    if(prev_mode == BRIGHTNESS_MODIFICATION_MODE && fsm_inst.cur_mode == DISPLAY_MODE)
+    {
+        picker_fsm_save_hsv(&(fsm_inst.hsv));
+    }
 
     NRF_LOG_INFO("CHANGED STATE TO %d", fsm_inst.cur_mode);
 }
@@ -215,4 +223,10 @@ void picker_fsm_release_handler()
 void picker_fsm_double_click_handler()
 {
     picker_fsm_next_state();
+}
+
+
+void picker_fsm_set_hsv(hsv *src)
+{
+    hsv_copy(src, &(fsm_inst.hsv));
 }

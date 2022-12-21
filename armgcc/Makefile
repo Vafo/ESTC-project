@@ -56,6 +56,7 @@ SRC_FILES += \
   $(SDK_ROOT)/components/libraries/usbd/app_usbd_serial_num.c \
   $(SDK_ROOT)/components/libraries/queue/nrf_queue.c \
   $(SDK_ROOT)/components/boards/boards.c \
+  \
   $(PROJ_DIR)/modules/button_hal.c \
   $(PROJ_DIR)/modules/blink_hal.c \
   $(PROJ_DIR)/modules/button_2events.c \
@@ -71,6 +72,7 @@ SRC_FILES += \
   $(PROJ_DIR)/main-parts/message/main_message_core.c \
   $(PROJ_DIR)/main-parts/message/agents/click_agent.c \
   $(PROJ_DIR)/main-parts/message/agents/picker_fsm_agent.c \
+  $(PROJ_DIR)/main-parts/message/agents/nvmc_agent.c \
   $(PROJ_DIR)/main.c \
 
   # $(PROJ_DIR)/main-parts/main_blinking.c // Outdated pwm used
