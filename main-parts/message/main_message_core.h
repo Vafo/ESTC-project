@@ -7,7 +7,8 @@ typedef enum {
     PRESS_EVENT,
     RELEASE_EVENT,
     DOUBLE_CLICK_EVENT,
-    SAVE_DATA_EVENT,
+    SAVE_LED_EVENT,
+    LOADED_LED_EVENT,
 
     MESSAGE_EVENT_NUMBER
 } message_event;
