@@ -52,16 +52,22 @@ SRC_FILES += \
   $(SDK_ROOT)/components/libraries/usbd/app_usbd_core.c \
   $(SDK_ROOT)/components/libraries/usbd/app_usbd_string_desc.c \
   $(SDK_ROOT)/components/libraries/usbd/app_usbd_serial_num.c \
+  $(SDK_ROOT)/components/libraries/queue/nrf_queue.c \
   $(SDK_ROOT)/components/boards/boards.c \
   $(PROJ_DIR)/modules/button_hal.c \
   $(PROJ_DIR)/modules/blink_hal.c \
   $(PROJ_DIR)/modules/button_2events.c \
   $(PROJ_DIR)/modules/pwm_abs.c \
   $(PROJ_DIR)/modules/hsv_rgb.c \
+  $(PROJ_DIR)/modules/message_core.c \
+  $(PROJ_DIR)/modules/message_agent.c \
   $(PROJ_DIR)/main-parts/main_click.c \
   $(PROJ_DIR)/main-parts/main_pwm.c \
   $(PROJ_DIR)/main-parts/main_logs.c \
   $(PROJ_DIR)/main-parts/main_picker_fsm.c \
+  $(PROJ_DIR)/main-parts/message/main_message_core.c \
+  $(PROJ_DIR)/main-parts/message/agents/click_agent.c \
+  $(PROJ_DIR)/main-parts/message/agents/picker_fsm_agent.c \
   $(PROJ_DIR)/main.c \
 
   # $(PROJ_DIR)/main-parts/main_blinking.c // Outdated pwm used
@@ -95,11 +101,15 @@ INC_FOLDERS += \
   $(SDK_ROOT)/components/libraries/usbd \
   $(SDK_ROOT)/components/libraries/usbd/class/cdc \
   $(SDK_ROOT)/components/libraries/usbd/class/cdc/acm \
+  $(SDK_ROOT)/components/libraries/queue/ \
   $(SDK_ROOT)/components/drivers_nrf/nrf_soc_nosd \
   $(SDK_ROOT)/components/boards \
   $(SDK_ROOT)/components \
+  \
   $(PROJ_DIR)/config \
   $(PROJ_DIR)/modules \
+  $(PROJ_DIR)/main-parts/message/agents \
+  $(PROJ_DIR)/main-parts/message \
   $(PROJ_DIR)/main-parts \
   $(PROJ_DIR) \
 
