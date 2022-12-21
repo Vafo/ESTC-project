@@ -229,4 +229,5 @@ void picker_fsm_double_click_handler()
 void picker_fsm_set_hsv(hsv *src)
 {
     hsv_copy(src, &(fsm_inst.hsv));
+    picker_state_exec(fsm_inst.cur_mode);
 }

@@ -24,17 +24,21 @@ hsv hsv_tmp = {
 };
 void nvmc_agent_get_hsv()
 {
-    // nvmc_api_byte_t sign_byte = 0;
+    nvmc_api_byte_t sign_byte = 0;
 
-    // nvmc_api_address_t valid_loc;
-    // while(sign_byte != NVMC_API_EMPTY_BYTE_SLOT)
-    // {
-    //     valid_loc = nvmc_api_get_cur_read_pos(&nvmc_state);
-    //     nvmc_api_read_cur_n_bytes(&nvmc_state, &sign_byte, sizeof(sign_byte));
-    //     nvmc_api_set_cur_read_pos(&nvmc_state, valid_loc + sizeof(hsv));
-    // }
-    // nvmc_api_set_cur_read_pos(&nvmc_state, valid_loc);
-    // nvmc_api_read_cur_n_bytes(&nvmc_state,  (nvmc_api_byte_t *) &hsv_tmp, sizeof(hsv)); 
+    nvmc_api_address_t valid_loc;
+    while(sign_byte != NVMC_API_EMPTY_BYTE_SLOT)
+    {
+        valid_loc = nvmc_api_get_cur_read_pos(&nvmc_state);
+        nvmc_api_read_cur_n_bytes(&nvmc_state, &sign_byte, sizeof(sign_byte));
+        nvmc_api_set_cur_read_pos(&nvmc_state, valid_loc + sizeof(hsv));
+    }
+    nvmc_api_set_cur_read_pos(&nvmc_state, valid_loc);
+    nvmc_api_read_cur_n_bytes(&nvmc_state,  (nvmc_api_byte_t *) &hsv_tmp, sizeof(hsv)); 
+
+    rgb rgb_tmp;
+    hsv_to_rgb(&hsv_tmp, &rgb_tmp);
+    NRF_LOG_INFO("LOADED R : %d | G : %d | B : %d |" , rgb_tmp.r * 1000, rgb_tmp.g * 1000, rgb_tmp.b * 1000);
 
     message_agent_send_msg(&nvmc_agent_ctx, LOADED_LED_EVENT, &hsv_tmp, NULL);
 }
@@ -71,6 +75,8 @@ ret_code_t nvmc_agent_init(message_core_t *msg_core)
 
     message_agent_listen_to(&nvmc_agent_ctx, SAVE_LED_EVENT);
     message_agent_listen_to(&nvmc_agent_ctx, GET_LED_EVENT);
+
+    message_agent_send_msg(&nvmc_agent_ctx, GET_LED_EVENT, NULL, NULL);
 
     return NRF_SUCCESS;
 }

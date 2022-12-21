@@ -33,4 +33,5 @@ void on_release()
 void on_double_click()
 {
     message_agent_send_msg(&click_agent_ctx, DOUBLE_CLICK_EVENT, NULL, NULL);
+    // message_agent_send_msg(&click_agent_ctx, GET_LED_EVENT, NULL, NULL);
 }
