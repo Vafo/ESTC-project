@@ -52,6 +52,7 @@ SRC_FILES += \
   $(SDK_ROOT)/components/libraries/usbd/app_usbd_core.c \
   $(SDK_ROOT)/components/libraries/usbd/app_usbd_string_desc.c \
   $(SDK_ROOT)/components/libraries/usbd/app_usbd_serial_num.c \
+  $(SDK_ROOT)/components/libraries/queue/nrf_queue.c \
   $(SDK_ROOT)/components/boards/boards.c \
   $(PROJ_DIR)/modules/button_hal.c \
   $(PROJ_DIR)/modules/blink_hal.c \
@@ -95,11 +96,15 @@ INC_FOLDERS += \
   $(SDK_ROOT)/components/libraries/usbd \
   $(SDK_ROOT)/components/libraries/usbd/class/cdc \
   $(SDK_ROOT)/components/libraries/usbd/class/cdc/acm \
+  $(SDK_ROOT)/components/libraries/queue/ \
   $(SDK_ROOT)/components/drivers_nrf/nrf_soc_nosd \
   $(SDK_ROOT)/components/boards \
   $(SDK_ROOT)/components \
+  \
   $(PROJ_DIR)/config \
   $(PROJ_DIR)/modules \
+  $(PROJ_DIR)/main-parts/message/agents \
+  $(PROJ_DIR)/main-parts/message \
   $(PROJ_DIR)/main-parts \
   $(PROJ_DIR) \
 

@@ -5,6 +5,7 @@
         "PROJ_DIR": "${workspaceFolder}",
         "PROJ_PARTS": "${workspaceFolder}/main-parts",
         "PROJ_MODULES": "${workspaceFolder}/modules",
+        "PROJ_STUPID_INCL_PATH" : "${env:PROJ_DIR}/**",
         "stupidIncludePath": "${env:SDK_ROOT}/**",
         "defaultIncludePath": [
             "${env:SDK_ROOT}/components",
@@ -82,9 +83,7 @@
         {
             "name": "Linux",
             "includePath": [
-                "${env:PROJ_DIR}",
-                "${env:PROJ_PARTS}",
-                "${env:PROJ_MODULES}",
+                "${env:PROJ_STUPID_INCL_PATH}",
                 "${env:SDK_CFG}",
                 "${env:stupidIncludePath}"
             ],
