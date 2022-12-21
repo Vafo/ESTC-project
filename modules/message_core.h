@@ -13,9 +13,9 @@ typedef struct {
     uint8_t event_id;
 } message_obj_t;
 
-typedef uint8_t (*message_agent_msg_handler)(message_obj_t *message);                   // Agent message handler
-typedef uint8_t (*message_agent_msg_handled_callback)(message_obj_t *message);          // Called per agent processed
-typedef uint8_t (*message_agent_msg_handled_callback_final)(message_obj_t *message);    // Called on message handled by all agents
+typedef ret_code_t (*message_agent_msg_handler)(message_obj_t *message);                   // Agent message handler
+typedef ret_code_t (*message_agent_msg_handled_callback)(message_obj_t *message);          // Called per agent processed
+typedef ret_code_t (*message_agent_msg_handled_callback_final)(message_obj_t *message);    // Called on message handled by all agents
 
 typedef struct {
     const char *agent_name;

@@ -52,6 +52,11 @@
         "nrf_peripherals.h": "c",
         "nrf52840_peripherals.h": "c",
         "main_pwm.h": "c",
-        "pwm_abs.h": "c"
+        "pwm_abs.h": "c",
+        "main_click_agent.h": "c",
+        "main_message_core.h": "c",
+        "picker_fsm_agent.h": "c",
+        "main_picker_fsm.h": "c",
+        "message_agent.h": "c"
     }
 }

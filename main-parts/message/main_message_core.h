@@ -14,5 +14,8 @@ typedef enum {
 
 extern message_core_t msg_core;
 
+ret_code_t main_message_core_init();
+ret_code_t main_message_core_process_message();
+
 
 #endif
