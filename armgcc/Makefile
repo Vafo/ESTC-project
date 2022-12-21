@@ -59,10 +59,13 @@ SRC_FILES += \
   $(PROJ_DIR)/modules/button_2events.c \
   $(PROJ_DIR)/modules/pwm_abs.c \
   $(PROJ_DIR)/modules/hsv_rgb.c \
+  $(PROJ_DIR)/modules/message_core.c \
+  $(PROJ_DIR)/modules/message_agent.c \
   $(PROJ_DIR)/main-parts/main_click.c \
   $(PROJ_DIR)/main-parts/main_pwm.c \
   $(PROJ_DIR)/main-parts/main_logs.c \
   $(PROJ_DIR)/main-parts/main_picker_fsm.c \
+  $(PROJ_DIR)/main-parts/message/main_message_core.c \
   $(PROJ_DIR)/main.c \
 
   # $(PROJ_DIR)/main-parts/main_blinking.c // Outdated pwm used

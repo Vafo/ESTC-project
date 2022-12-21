@@ -12,6 +12,7 @@ typedef enum {
     MESSAGE_EVENT_NUMBER
 } message_event;
 
+extern message_core_t msg_core;
 
 
 #endif
