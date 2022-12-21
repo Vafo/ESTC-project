@@ -12,13 +12,13 @@
 
 int main(void)
 {
+    main_message_core_init();
     led_init_all();
     picker_fsm_init();
     NRF_LOG_INFO("Starting up the test project with USB logging");
     main_logs_init();
     main_click_init();
 
-    main_message_core_init();
 
     while (true)
     {   
