@@ -1,6 +1,4 @@
 #include "nvmc_api.h"
-#include "bootloader/dfu/nrf_dfu.h"
-#include "bootloader/nrf_bootloader_info.h"
 
     // NRF_DFU_APP_DATA_AREA_SIZE
     // BOOTLOADER_START_ADDR

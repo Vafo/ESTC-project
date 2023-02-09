@@ -22,6 +22,7 @@ hsv hsv_tmp = {
     .s = 1,
     .v = 1
 };
+
 void nvmc_agent_get_hsv()
 {
     nvmc_api_byte_t sign_byte = 0;
@@ -76,7 +77,7 @@ ret_code_t nvmc_agent_init(message_core_t *msg_core)
     message_agent_listen_to(&nvmc_agent_ctx, SAVE_LED_EVENT);
     message_agent_listen_to(&nvmc_agent_ctx, GET_LED_EVENT);
 
-    message_agent_send_msg(&nvmc_agent_ctx, GET_LED_EVENT, NULL, NULL);
+    // message_agent_send_msg(&nvmc_agent_ctx, GET_LED_EVENT, NULL, NULL);
 
     return NRF_SUCCESS;
 }

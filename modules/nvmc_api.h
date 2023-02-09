@@ -1,10 +1,18 @@
 #ifndef NVMC_API_H
 #define NVMC_API_H
 
+// #include "bootloader/dfu/nrf_dfu.h"
+// #include "bootloader/nrf_bootloader_info.h"
+
 #include "nrfx_nvmc.h"
 
 #define NVMC_API_EMPTY_WORD_SLOT ( (nvmc_api_word_t) 0xFFFFFFFF )
 #define NVMC_API_EMPTY_BYTE_SLOT ( (nvmc_api_word_t) 0xFF)
+
+#define BOOTLOADER_SETTINGS_PAGE_SIZE   ((1) << (12))
+
+#define BOOTLOADER_START_ADDR (0x000F8000)
+#define NRF_DFU_APP_DATA_AREA_SIZE  (3 * BOOTLOADER_START_ADDR)
 
 #define NVMC_API_APPLICATION_BEGIN (BOOTLOADER_START_ADDR - NRF_DFU_APP_DATA_AREA_SIZE)
 #define NVMC_API_APPLICATION_END (BOOTLOADER_START_ADDR)

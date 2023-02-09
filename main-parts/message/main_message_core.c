@@ -10,7 +10,7 @@ ret_code_t main_message_core_init()
 {
     click_agent_init(&msg_core);
     picker_fsm_agent_init(&msg_core);
-    nvmc_agent_init(&msg_core);
+    // nvmc_agent_init(&msg_core);
     
     return NRF_SUCCESS;
 }
