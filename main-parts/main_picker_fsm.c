@@ -16,6 +16,8 @@ main_pwm_math_fn led_math_fn;
 
 
 picker_fsm_ctx_t fsm_inst;
+
+rgb damn;
 // Delete useless (dead) comments
 
 static void pwm_handler_rgb(nrfx_pwm_evt_type_t event_type, pwm_abs_op_ctx_t *operational_context, uint32_t top_value)
@@ -177,8 +179,8 @@ void picker_fsm_init()
     fsm_inst.updated = 0;
 
     main_pwm_init(pwm_handler_rgb, pwm_handler_led);
-    // picker_fsm_get_hsv();
     picker_state_exec(DISPLAY_MODE);
+    picker_fsm_get_hsv();
 }
 
 
@@ -191,6 +193,7 @@ void picker_fsm_next_state()
     if(prev_mode == BRIGHTNESS_MODIFICATION_MODE && fsm_inst.cur_mode == DISPLAY_MODE)
     {
         picker_fsm_save_hsv(&(fsm_inst.hsv));
+        // picker_fsm_get_hsv();
     }
 
     NRF_LOG_INFO("CHANGED STATE TO %d", fsm_inst.cur_mode);
@@ -228,6 +231,16 @@ void picker_fsm_double_click_handler()
 
 void picker_fsm_set_hsv(hsv *src)
 {
-    hsv_copy(src, &(fsm_inst.hsv));
-    picker_state_exec(fsm_inst.cur_mode);
+    if(src != NULL)
+    {
+        hsv_copy(src, &(fsm_inst.hsv));
+        hsv_to_rgb(src, &damn);
+        
+        fsm_inst.updated = 1;
+        picker_state_exec(fsm_inst.cur_mode);
+    }
+    else
+    {
+        NRF_LOG_INFO("No entry was found");
+    }
 }

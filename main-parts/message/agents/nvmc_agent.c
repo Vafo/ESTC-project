@@ -11,13 +11,24 @@ static char nvmc_name[] = "NVMC module";
 void nvmc_agent_save_hsv(hsv *src)
 {
     size_t num_bytes = sizeof(hsv);
+    nvmc_api_address_t read_pos = nvmc_api_get_cur_write_pos(&nvmc_state);
+    nvmc_api_address_t prev_pos = nvmc_api_get_cur_read_pos(&nvmc_state);
     nvmc_api_write_next_n_bytes(&nvmc_state, (nvmc_api_byte_t *) src, num_bytes);
     rgb rgb_tmp;
     hsv_to_rgb(src, &rgb_tmp);
     NRF_LOG_INFO("SAVED R : %d | G : %d | B : %d |" , rgb_tmp.r * 1000, rgb_tmp.g * 1000, rgb_tmp.b * 1000);
+    
+    hsv hsv_a;
+    nvmc_api_set_cur_read_pos(&nvmc_state, read_pos);
+    nvmc_api_read_next_n_bytes(&nvmc_state, (nvmc_api_byte_t *) &hsv_a, sizeof(hsv));
+    hsv_to_rgb(&hsv_a, &rgb_tmp);
+    NRF_LOG_INFO("ACTUAL R : %d | G : %d | B : %d |" , rgb_tmp.r * 1000, rgb_tmp.g * 1000, rgb_tmp.b * 1000);
+    
+    
+    nvmc_api_set_cur_read_pos(&nvmc_state, prev_pos);
 }
 
-hsv hsv_tmp = {
+static hsv hsv_tmp = {
     .h = 0,
     .s = 1,
     .v = 1
@@ -27,21 +38,37 @@ void nvmc_agent_get_hsv()
 {
     nvmc_api_byte_t sign_byte = 0;
 
-    nvmc_api_address_t valid_loc;
+    nvmc_api_address_t init_loc;
+    nvmc_api_address_t valid_loc = 0;
+
+    void *res;
+
+    init_loc = nvmc_api_get_cur_read_pos(&nvmc_state);
     while(sign_byte != NVMC_API_EMPTY_BYTE_SLOT)
     {
         valid_loc = nvmc_api_get_cur_read_pos(&nvmc_state);
         nvmc_api_read_cur_n_bytes(&nvmc_state, &sign_byte, sizeof(sign_byte));
         nvmc_api_set_cur_read_pos(&nvmc_state, valid_loc + sizeof(hsv));
     }
-    nvmc_api_set_cur_read_pos(&nvmc_state, valid_loc);
-    nvmc_api_read_cur_n_bytes(&nvmc_state,  (nvmc_api_byte_t *) &hsv_tmp, sizeof(hsv)); 
+    valid_loc -= sizeof(hsv);
 
-    rgb rgb_tmp;
-    hsv_to_rgb(&hsv_tmp, &rgb_tmp);
-    NRF_LOG_INFO("LOADED R : %d | G : %d | B : %d |" , rgb_tmp.r * 1000, rgb_tmp.g * 1000, rgb_tmp.b * 1000);
+    if(init_loc < valid_loc)
+    {
+        nvmc_api_set_cur_read_pos(&nvmc_state, valid_loc);
+        nvmc_api_read_cur_n_bytes(&nvmc_state,  (nvmc_api_byte_t *) &hsv_tmp, sizeof(hsv)); 
 
-    message_agent_send_msg(&nvmc_agent_ctx, LOADED_LED_EVENT, &hsv_tmp, NULL);
+        rgb rgb_tmp;
+        hsv_to_rgb(&hsv_tmp, &rgb_tmp);
+        NRF_LOG_INFO("LOADED R : %d | G : %d | B : %d |" , rgb_tmp.r * 1000, rgb_tmp.g * 1000, rgb_tmp.b * 1000);
+        res = &hsv_tmp;
+    }
+    else
+    {
+        res = NULL;
+    }
+
+
+    message_agent_send_msg(&nvmc_agent_ctx, LOADED_LED_EVENT, res, NULL);
 }
 
 ret_code_t nvmc_agent_msg_handler(message_obj_t *message)

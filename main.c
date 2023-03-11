@@ -1,5 +1,6 @@
 #include <stdbool.h>
 #include <stdint.h>
+#include "nrf_delay.h"
 #include "boards.h"
 
 #include "blink_hal.h"
@@ -12,6 +13,9 @@
 
 int main(void)
 {
+    nrf_delay_ms(2500);
+    NRF_LOG_INFO("Starting application");
+    
     main_message_core_init();
     led_init_all();
     picker_fsm_init();
