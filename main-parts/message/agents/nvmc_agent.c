@@ -97,7 +97,7 @@ ret_code_t nvmc_agent_msg_handler(message_obj_t *message)
 
 ret_code_t nvmc_agent_init(message_core_t *msg_core)
 {
-    nvmc_api_init(&nvmc_state);
+    nvmc_api_init(&nvmc_state, 0);
     message_agent_init(&nvmc_agent_ctx, nvmc_name, nvmc_agent_msg_handler, NULL, NULL);
     message_agent_bind_to_core(&nvmc_agent_ctx, msg_core);
 

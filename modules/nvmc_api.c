@@ -9,9 +9,13 @@
 #define NVMC_API_GET_PAGE(pos) ( (pos) & (~(BOOTLOADER_SETTINGS_PAGE_SIZE - 1)) )
 
 
-void nvmc_api_init(nvmc_state_t *nvmc_state)
+nrfx_err_t nvmc_api_init(nvmc_state_t *nvmc_state, uint8_t page_no)
 {
-    nvmc_state->cur_read_pos = nvmc_state->cur_write_pos = NVMC_API_APPLICATION_BEGIN;
+    VERIFY_TRUE(0 <= page_no && page_no < NVMC_API_PAGE_NUMBER, \
+                NRF_ERROR_INVALID_PARAM);
+
+    nvmc_state->cur_read_pos = nvmc_state->cur_write_pos = NVMC_API_APPLICATION_BEGIN + page_no * BOOTLOADER_SETTINGS_PAGE_SIZE;
+    nvmc_state->page_no = page_no;
 
     nvmc_api_word_t sign_word = NVMC_API_EMPTY_WORD_SLOT;
 
@@ -37,14 +41,15 @@ void nvmc_api_init(nvmc_state_t *nvmc_state)
     }
     nvmc_api_set_cur_read_pos(nvmc_state, initial_pos);
 
+    return NRF_SUCCESS;
 }
 
 nrfx_err_t nvmc_api_read_next_word(nvmc_state_t *nvmc_state, nvmc_api_word_t *dest)
 {
     VERIFY_TRUE(dest != NULL, NRF_ERROR_INVALID_PARAM);
-    VERIFY_TRUE(IS_VALID_POS(nvmc_api_get_cur_read_pos(nvmc_state)), \
+    VERIFY_TRUE(IS_VALID_POS_IN_PAGE(nvmc_api_get_cur_read_pos(nvmc_state), nvmc_state->page_no), \
                 NRF_ERROR_INVALID_STATE);
-    VERIFY_TRUE(IS_VALID_POS(nvmc_api_get_cur_read_pos(nvmc_state) + sizeof(nvmc_api_word_t) - 1), \
+    VERIFY_TRUE(IS_VALID_POS_IN_PAGE(nvmc_api_get_cur_read_pos(nvmc_state) + sizeof(nvmc_api_word_t) - 1, nvmc_state->page_no), \
                 NRF_ERROR_INVALID_LENGTH);
 
     NRF_LOG_INFO("Reading at %x", nvmc_state->cur_read_pos);
@@ -57,9 +62,9 @@ nrfx_err_t nvmc_api_read_next_word(nvmc_state_t *nvmc_state, nvmc_api_word_t *de
 nrfx_err_t nvmc_api_write_next_word(nvmc_state_t *nvmc_state, nvmc_api_word_t *src)
 {
     VERIFY_TRUE(src != NULL, NRF_ERROR_INVALID_PARAM);
-    VERIFY_TRUE(IS_VALID_POS(nvmc_api_get_cur_write_pos(nvmc_state)), \
+    VERIFY_TRUE(IS_VALID_POS_IN_PAGE(nvmc_api_get_cur_write_pos(nvmc_state), nvmc_state->page_no), \
                 NRF_ERROR_INVALID_STATE);
-    VERIFY_TRUE(IS_VALID_POS(nvmc_api_get_cur_write_pos(nvmc_state) + sizeof(nvmc_api_word_t) - 1), \
+    VERIFY_TRUE(IS_VALID_POS_IN_PAGE(nvmc_api_get_cur_write_pos(nvmc_state) + sizeof(nvmc_api_word_t) - 1, nvmc_state->page_no), \
                 NRF_ERROR_INVALID_LENGTH);
 
     nvmc_api_wait_until_written();
@@ -88,9 +93,9 @@ nrfx_err_t nvmc_api_read_cur_n_bytes(nvmc_state_t *nvmc_state, nvmc_api_byte_t *
 {
     VERIFY_TRUE(dest != NULL, NRF_ERROR_INVALID_PARAM);
     VERIFY_TRUE(num_bytes >= 0, NRF_ERROR_INVALID_PARAM);
-    VERIFY_TRUE(IS_VALID_POS(nvmc_api_get_cur_read_pos(nvmc_state)), \
+    VERIFY_TRUE(IS_VALID_POS_IN_PAGE(nvmc_api_get_cur_read_pos(nvmc_state), nvmc_state->page_no), \
                 NRF_ERROR_INVALID_STATE);
-    VERIFY_TRUE(IS_VALID_POS(nvmc_api_get_cur_read_pos(nvmc_state) + (sizeof(nvmc_api_byte_t) * num_bytes) - 1), \
+    VERIFY_TRUE(IS_VALID_POS_IN_PAGE(nvmc_api_get_cur_read_pos(nvmc_state) + (sizeof(nvmc_api_byte_t) * num_bytes) - 1, nvmc_state->page_no), \
                 NRF_ERROR_INVALID_LENGTH);
 
     nvmc_api_byte_t *loc_begin = (nvmc_api_byte_t *) nvmc_state->cur_read_pos;
@@ -109,9 +114,9 @@ nrfx_err_t nvmc_api_write_next_n_bytes(nvmc_state_t *nvmc_state, nvmc_api_byte_t
 {
     VERIFY_TRUE(src != NULL, NRF_ERROR_INVALID_STATE);
     VERIFY_TRUE(num_bytes >= 0, NRF_ERROR_INVALID_PARAM);
-    VERIFY_TRUE(IS_VALID_POS(nvmc_api_get_cur_write_pos(nvmc_state)), \
+    VERIFY_TRUE(IS_VALID_POS_IN_PAGE(nvmc_api_get_cur_write_pos(nvmc_state), nvmc_state->page_no), \
                 NRF_ERROR_INVALID_STATE);
-    VERIFY_TRUE(nvmc_api_get_cur_write_pos(nvmc_state) + (sizeof(nvmc_api_byte_t) * num_bytes) - 1, \
+    VERIFY_TRUE(IS_VALID_POS_IN_PAGE(nvmc_api_get_cur_write_pos(nvmc_state) + (sizeof(nvmc_api_byte_t) * num_bytes) - 1, nvmc_state->page_no), \
                 NRF_ERROR_INVALID_LENGTH);
 
     // nvmc_api_byte_t *loc_begin = (nvmc_api_byte_t *) nvmc_state->cur_write_pos;
