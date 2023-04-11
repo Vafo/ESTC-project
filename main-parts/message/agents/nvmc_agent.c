@@ -17,7 +17,7 @@ void nvmc_agent_save_hsv(hsv *src)
     rgb rgb_tmp;
     hsv_to_rgb(src, &rgb_tmp);
     NRF_LOG_INFO("SAVED R : %d | G : %d | B : %d |" , rgb_tmp.r * 1000, rgb_tmp.g * 1000, rgb_tmp.b * 1000);
-    
+    NRF_LOG_INFO("AT %x", nvmc_api_get_cur_write_pos(&nvmc_state) - sizeof(hsv));
     hsv hsv_a;
     nvmc_api_set_cur_read_pos(&nvmc_state, read_pos);
     nvmc_api_read_next_n_bytes(&nvmc_state, (nvmc_api_byte_t *) &hsv_a, sizeof(hsv));
@@ -52,7 +52,7 @@ void nvmc_agent_get_hsv()
     }
     valid_loc -= sizeof(hsv);
 
-    if(init_loc < valid_loc)
+    if(init_loc <= valid_loc)
     {
         nvmc_api_set_cur_read_pos(&nvmc_state, valid_loc);
         nvmc_api_read_cur_n_bytes(&nvmc_state,  (nvmc_api_byte_t *) &hsv_tmp, sizeof(hsv)); 

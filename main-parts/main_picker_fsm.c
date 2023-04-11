@@ -17,7 +17,6 @@ main_pwm_math_fn led_math_fn;
 
 picker_fsm_ctx_t fsm_inst;
 
-rgb damn;
 // Delete useless (dead) comments
 
 static void pwm_handler_rgb(nrfx_pwm_evt_type_t event_type, pwm_abs_op_ctx_t *operational_context, uint32_t top_value)
@@ -234,13 +233,14 @@ void picker_fsm_set_hsv(hsv *src)
     if(src != NULL)
     {
         hsv_copy(src, &(fsm_inst.hsv));
-        hsv_to_rgb(src, &damn);
         
         fsm_inst.updated = 1;
         picker_state_exec(fsm_inst.cur_mode);
     }
     else
     {
-        NRF_LOG_INFO("No entry was found");
+        NRF_LOG_INFO("No entry was found. Setting default value\n");
+        float last_2_digits = ((float) LAST_2_DIGITS) / 100;
+        hsv_set_values(&fsm_inst.hsv, last_2_digits, 1, 1);
     }
 }
