@@ -57,6 +57,10 @@
         "main_message_core.h": "c",
         "picker_fsm_agent.h": "c",
         "main_picker_fsm.h": "c",
-        "message_agent.h": "c"
+        "message_agent.h": "c",
+        "nvmc_api.h": "c",
+        "nrfx_nvmc.h": "c",
+        "nrf_dfu.h": "c",
+        "nrf_bootloader_info.h": "c"
     }
 }

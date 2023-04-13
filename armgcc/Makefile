@@ -23,6 +23,8 @@ SRC_FILES += \
   $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_usbd.c \
   $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_power.c \
   $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_pwm.c \
+  $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_nvmc.c \
+  $(SDK_ROOT)/modules/nrfx/hal/nrf_nvmc.c \
   $(SDK_ROOT)/integration/nrfx/legacy/nrf_drv_clock.c \
   $(SDK_ROOT)/integration/nrfx/legacy/nrf_drv_power.c \
   $(SDK_ROOT)/external/fprintf/nrf_fprintf_format.c \
@@ -54,6 +56,7 @@ SRC_FILES += \
   $(SDK_ROOT)/components/libraries/usbd/app_usbd_serial_num.c \
   $(SDK_ROOT)/components/libraries/queue/nrf_queue.c \
   $(SDK_ROOT)/components/boards/boards.c \
+  \
   $(PROJ_DIR)/modules/button_hal.c \
   $(PROJ_DIR)/modules/blink_hal.c \
   $(PROJ_DIR)/modules/button_2events.c \
@@ -61,6 +64,7 @@ SRC_FILES += \
   $(PROJ_DIR)/modules/hsv_rgb.c \
   $(PROJ_DIR)/modules/message_core.c \
   $(PROJ_DIR)/modules/message_agent.c \
+  $(PROJ_DIR)/modules/nvmc_api.c \
   $(PROJ_DIR)/main-parts/main_click.c \
   $(PROJ_DIR)/main-parts/main_pwm.c \
   $(PROJ_DIR)/main-parts/main_logs.c \
@@ -68,6 +72,7 @@ SRC_FILES += \
   $(PROJ_DIR)/main-parts/message/main_message_core.c \
   $(PROJ_DIR)/main-parts/message/agents/click_agent.c \
   $(PROJ_DIR)/main-parts/message/agents/picker_fsm_agent.c \
+  $(PROJ_DIR)/main-parts/message/agents/nvmc_agent.c \
   $(PROJ_DIR)/main.c \
 
   # $(PROJ_DIR)/main-parts/main_blinking.c // Outdated pwm used
@@ -94,6 +99,8 @@ INC_FOLDERS += \
   $(SDK_ROOT)/components/libraries/log \
   $(SDK_ROOT)/components/libraries/experimental_section_vars \
   $(SDK_ROOT)/components/libraries/delay \
+  $(SDK_ROOT)/components/libraries/bootloader \
+  $(SDK_ROOT)/components/libraries/bootloader/dfu \
   $(SDK_ROOT)/components/libraries/bsp \
   $(SDK_ROOT)/components/libraries/balloc \
   $(SDK_ROOT)/components/libraries/atomic_fifo \
@@ -102,6 +109,7 @@ INC_FOLDERS += \
   $(SDK_ROOT)/components/libraries/usbd/class/cdc \
   $(SDK_ROOT)/components/libraries/usbd/class/cdc/acm \
   $(SDK_ROOT)/components/libraries/queue/ \
+  $(SDK_ROOT)/components/libraries/ \
   $(SDK_ROOT)/components/drivers_nrf/nrf_soc_nosd \
   $(SDK_ROOT)/components/boards \
   $(SDK_ROOT)/components \

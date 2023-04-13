@@ -38,4 +38,8 @@ void picker_fsm_press_handler();
 void picker_fsm_release_handler();
 void picker_fsm_double_click_handler();
 
+void picker_fsm_save_hsv(hsv *src);
+void picker_fsm_set_hsv(hsv *src);
+void picker_fsm_get_hsv();
+
 #endif

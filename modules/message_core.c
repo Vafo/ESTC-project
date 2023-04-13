@@ -1,4 +1,5 @@
 #include "message_core.h"
+#include "main_logs.h"
 
 ret_code_t message_core_add_agent_listener(message_core_t *msg_core, message_agent_t *agent, uint8_t event_id)
 {
@@ -63,6 +64,8 @@ ret_code_t message_core_process_message(message_core_t *msg_core)
         event_id = message.event_id;
         sender = message.sender;
         
+        NRF_LOG_INFO("MESSAGE %d SENT BY %s", event_id, sender->agent_name);
+
         ASSERT(sender != NULL);
         ASSERT(0 <= event_id && event_id < msg_core->events_num);
         listener = message_handling_agents[event_id];
@@ -78,6 +81,8 @@ ret_code_t message_core_process_message(message_core_t *msg_core)
                 {
                     sender->msg_callback(&message);
                 }
+                
+                NRF_LOG_INFO("MESSAGE %d HANDLED BY %s", event_id, listener[agent_handler_idx]->agent_name);
             }
         }
 
