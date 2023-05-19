@@ -44,8 +44,7 @@ static void usb_ev_handler(app_usbd_class_inst_t const * p_inst,
     case APP_USBD_CDC_ACM_USER_EVT_PORT_OPEN:
     {
         ret_code_t ret;
-        rx_buffer_idx = 0;
-        ret = app_usbd_cdc_acm_read(&usb_cdc_acm, &m_rx_buffer[rx_buffer_idx], READ_SIZE);
+        ret = app_usbd_cdc_acm_read(&usb_cdc_acm, m_rx_buffer, READ_SIZE);
         UNUSED_VARIABLE(ret);
         break;
     }
