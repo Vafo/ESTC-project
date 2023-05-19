@@ -31,7 +31,12 @@ SECTIONS
     KEEP(*(SORT(.log_filter_data*)))
     PROVIDE(__stop_log_filter_data = .);
   } > RAM
-
+  .usbd_cli_cmds :
+  {
+    PROVIDE(__start_usbd_cli_cmds = .);
+    KEEP(*(SORT(.usbd_cli_cmds*)))
+    PROVIDE(__stop_usbd_cli_cmds = .);
+  } > RAM
 } INSERT AFTER .data;
 
 SECTIONS
