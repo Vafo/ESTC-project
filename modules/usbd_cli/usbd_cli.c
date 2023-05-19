@@ -1,5 +1,7 @@
 #include <stdbool.h>
 #include <stdint.h>
+#include <ctype.h>
+#include <stdlib.h>
 
 #include "nordic_common.h"
 
@@ -290,14 +292,44 @@ ret_code_t cmd_help(char *args, usbd_cli_cmd_cb_t *p_usbd_cli_cb)
         
         usbd_cli_write(p_cmd_entry->p_cmd_name, strlen(p_cmd_entry->p_cmd_name));
         usbd_cli_write(": ", sizeof(": "));
+        usbd_cli_write(USBD_CLI_LINE_BREAK "Synopsis: ", strlen(USBD_CLI_LINE_BREAK "Synopsis: "));
+        usbd_cli_write(p_cmd_entry->p_synopsis, strlen(p_cmd_entry->p_synopsis));
+        usbd_cli_write(USBD_CLI_LINE_BREAK "Description: ", strlen(USBD_CLI_LINE_BREAK "Description: "));
         usbd_cli_write(p_cmd_entry->p_help_desc, strlen(p_cmd_entry->p_help_desc));
-        usbd_cli_write(USBD_CLI_LINE_BREAK, sizeof(USBD_CLI_LINE_BREAK));
+        usbd_cli_write(USBD_CLI_LINE_BREAK USBD_CLI_LINE_BREAK, sizeof(USBD_CLI_LINE_BREAK USBD_CLI_LINE_BREAK));
     }
 
     return NRF_SUCCESS;
 }
 
+str_interval_t usbd_cli_parse_next_arg(char *arg_str)
+{
+    char *ptr = arg_str;
+    while(isspace(*ptr) && *ptr != '\0')
+        ptr++;
+        
+    arg_str = ptr;
+    while(!isspace(*ptr) && *ptr != '\0')
+        ptr++;
 
-USBD_CLI_ADD_COMMAND(help, "Display information about available commands", cmd_help);
+    str_interval_t res = {
+        .begin = arg_str,
+        .end = ptr
+    };
+
+    return res;
+}
+
+int usbd_cli_arg_to_int(str_interval_t arg)
+{
+    int res;
+    char tmp = *arg.end;
+    *arg.end = '\0';
+    res = atoi(arg.begin);
+    *arg.end = tmp;
+    return res;
+}
+
+USBD_CLI_ADD_COMMAND(help, "help", "Display information about available commands", cmd_help);
 
 #endif // ESTC_USB_CLI_ENABLED == 1

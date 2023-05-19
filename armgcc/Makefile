@@ -76,6 +76,7 @@ SRC_FILES += \
   $(PROJ_DIR)/main-parts/message/agents/click_agent.c \
   $(PROJ_DIR)/main-parts/message/agents/picker_fsm_agent.c \
   $(PROJ_DIR)/main-parts/message/agents/nvmc_agent.c \
+  $(PROJ_DIR)/main-parts/message/agents/cli_agent.c \
   $(PROJ_DIR)/main.c \
 
   # $(PROJ_DIR)/main-parts/main_blinking.c // Outdated pwm used

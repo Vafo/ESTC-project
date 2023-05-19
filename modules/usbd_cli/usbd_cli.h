@@ -4,12 +4,27 @@
 #include "nordic_common.h"
 #include "nrf_section.h"
 
+
+#define USBD_CLI_NO_ARG(arg) ((arg).begin == (arg).end) ? 1 : 0 
+#define USBD_CLI_RETURN_ON_NO_ARG(arg)  \
+do {                                    \
+if(USBD_CLI_NO_ARG(arg))                \
+{                                       \
+    return NRF_ERROR_INVALID_PARAM;     \
+} } while(0)
+
 #define USBD_CLI_LINE_BREAK "\r\n"
 #define USBD_CLI_LINE_BEGIN "> "
 
 typedef struct usbd_cli_cmd_cb_s usbd_cli_cmd_cb_t;
 
 typedef ret_code_t (*usbd_cli_cmd_handler_t)(char *args, usbd_cli_cmd_cb_t *p_usbd_cli_cb);
+
+typedef struct
+{
+    char *begin;
+    char *end;
+} str_interval_t;
 
 struct usbd_cli_cmd_cb_s
 {
@@ -19,6 +34,7 @@ struct usbd_cli_cmd_cb_s
 typedef struct
 {
     char *p_cmd_name;
+    char *p_synopsis;
     char *p_help_desc;
     usbd_cli_cmd_handler_t cmd_handler;
 } usbd_cli_cmd_entry_t;
@@ -28,9 +44,13 @@ void usbd_cli_init();
 bool usbd_cli_process();
 void usbd_cli_write(char *p_buf, size_t length);
 
-#define USBD_CLI_ADD_COMMAND(cmd_name, help_desc, handler)              \
+str_interval_t usbd_cli_parse_next_arg(char *arg_str);
+int usbd_cli_arg_to_int(str_interval_t arg);
+
+#define USBD_CLI_ADD_COMMAND(cmd_name, synopsis, help_desc, handler)              \
     static usbd_cli_cmd_entry_t CONCAT_2(m_usbd_cli_user_cmd_, cmd_name) = {  \
         .p_cmd_name = STRINGIFY(cmd_name),                              \
+        .p_synopsis = synopsis,                                         \
         .p_help_desc = help_desc,                                       \
         .cmd_handler = handler                                          \
     };                                                                  \
