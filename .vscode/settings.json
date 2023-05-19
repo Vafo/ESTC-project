@@ -67,6 +67,7 @@
         "stdint.h": "c",
         "app_usbd_cdc_desc.h": "c",
         "app_usbd_serial_num.h": "c",
-        "app_usbd_cdc_acm.h": "c"
+        "app_usbd_cdc_acm.h": "c",
+        "nrf_queue.h": "c"
     }
 }

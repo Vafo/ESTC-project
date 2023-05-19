@@ -4,6 +4,7 @@
 #include "nordic_common.h"
 
 #include "nrf_log.h"
+#include "nrf_queue.h"
 
 #include "app_usbd.h"
 #include "app_usbd_serial_num.h"
@@ -11,9 +12,13 @@
 
 #include "usbd_cli.h"
 
-#define READ_SIZE 1
+#define READ_SIZE NRF_DRV_USBD_EPSIZE
 
 static char m_rx_buffer[READ_SIZE];
+static char m_tx_buffer[NRF_DRV_USBD_EPSIZE];
+static uint8_t m_usb_tx_available;
+
+NRF_QUEUE_DEF(char, m_echo_buffer_queue, 2 * NRF_DRV_USBD_EPSIZE, NRF_QUEUE_MODE_OVERFLOW);
 
 static void usb_ev_handler(app_usbd_class_inst_t const * p_inst,
                            app_usbd_cdc_acm_user_event_t event);
@@ -36,6 +41,19 @@ APP_USBD_CDC_ACM_GLOBAL_DEF(usb_cdc_acm,
                             APP_USBD_CDC_COMM_PROTOCOL_NONE);
 
 
+static void usb_cli_process_echo()
+{
+    size_t q_size;
+    if(!m_usb_tx_available || nrf_queue_is_empty(&m_echo_buffer_queue))
+    {
+        return;
+    }
+
+    q_size = nrf_queue_out(&m_echo_buffer_queue, m_tx_buffer, NRF_DRV_USBD_EPSIZE);
+    m_usb_tx_available = 0;
+    app_usbd_cdc_acm_write(&usb_cdc_acm, m_tx_buffer, q_size);
+}
+
 static void usb_ev_handler(app_usbd_class_inst_t const * p_inst,
                            app_usbd_cdc_acm_user_event_t event)
 {
@@ -44,17 +62,24 @@ static void usb_ev_handler(app_usbd_class_inst_t const * p_inst,
     case APP_USBD_CDC_ACM_USER_EVT_PORT_OPEN:
     {
         ret_code_t ret;
-        ret = app_usbd_cdc_acm_read(&usb_cdc_acm, m_rx_buffer, READ_SIZE);
+
+        NRF_LOG_INFO("Port open");
+        nrf_queue_reset(&m_echo_buffer_queue);
+        
+        ret = app_usbd_cdc_acm_read_any(&usb_cdc_acm, m_rx_buffer, READ_SIZE);
+        m_usb_tx_available = 1;
         UNUSED_VARIABLE(ret);
         break;
     }
     case APP_USBD_CDC_ACM_USER_EVT_PORT_CLOSE:
     {
+        m_usb_tx_available = 0;
         break;
     }
     case APP_USBD_CDC_ACM_USER_EVT_TX_DONE:
     {
         NRF_LOG_INFO("tx done");
+        m_usb_tx_available = 1;
         break;
     }
     case APP_USBD_CDC_ACM_USER_EVT_RX_DONE:
@@ -72,21 +97,19 @@ static void usb_ev_handler(app_usbd_class_inst_t const * p_inst,
              */
             if (m_rx_buffer[0] == '\r' || m_rx_buffer[0] == '\n')
             {
-                ret = app_usbd_cdc_acm_write(&usb_cdc_acm, "\r\n", 2);
+                nrf_queue_write(&m_echo_buffer_queue, "\r\n", 2);
             }
             else
             {
-                ret = app_usbd_cdc_acm_write(&usb_cdc_acm,
-                                             m_rx_buffer,
-                                             READ_SIZE);
+                nrf_queue_write(&m_echo_buffer_queue, m_rx_buffer, READ_SIZE);
             }
 
             /* Fetch data until internal buffer is empty */
-            ret = app_usbd_cdc_acm_read(&usb_cdc_acm,
-                                        m_rx_buffer,
-                                        READ_SIZE);
+            ret = app_usbd_cdc_acm_read_any(&usb_cdc_acm,
+                                            m_rx_buffer,
+                                            READ_SIZE);
         } while (ret == NRF_SUCCESS);
-
+        
         break;
     }
     default:
@@ -100,16 +123,15 @@ bool usbd_cli_process()
     {
         /* Nothing to do */
     }
-
+    usb_cli_process_echo();
+    // usb_cli_process_cmd();
     return true;
 }
 
 
 void usbd_cli_init()
 {
-
-    NRF_LOG_INFO("Starting up the test project with USB logging");
-
+    NRF_LOG_INFO("usbd_cli initialization");
     app_usbd_class_inst_t const * class_cdc_acm = app_usbd_cdc_acm_class_inst_get(&usb_cdc_acm);
     ret_code_t ret = app_usbd_class_append(class_cdc_acm);
     APP_ERROR_CHECK(ret);
