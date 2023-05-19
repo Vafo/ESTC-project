@@ -59,5 +59,31 @@ ret_code_t cmd_rgb(char *args, usbd_cli_cmd_cb_t *p_usbd_cli_cb)
     return NRF_SUCCESS;
 }
 
-USBD_CLI_ADD_COMMAND(RGB, "RGB <red> <green> <blue>", "Sets current color of LED. Max value - 255", cmd_rgb);
-// USBD_CLI_ADD_COMMAND(HSV);
+ret_code_t cmd_hsv(char *args, usbd_cli_cmd_cb_t *p_usbd_cli_cb)
+{
+    str_interval_t arg = {
+        .end = args
+    };
+    
+    arg = usbd_cli_parse_next_arg(arg.end);
+    USBD_CLI_RETURN_ON_NO_ARG(arg);
+    hsv_data.h = MIN(((float) usbd_cli_arg_to_int(arg)) / 255, 1);
+    
+    arg = usbd_cli_parse_next_arg(arg.end);
+    USBD_CLI_RETURN_ON_NO_ARG(arg);
+    hsv_data.s = MIN(((float) usbd_cli_arg_to_int(arg)) / 255, 1);
+    
+    arg = usbd_cli_parse_next_arg(arg.end);
+    USBD_CLI_RETURN_ON_NO_ARG(arg);
+    hsv_data.v = MIN(((float) usbd_cli_arg_to_int(arg)) / 255, 1);
+
+    message_agent_send_msg(&cli_agent_ctx, LOADED_LED_EVENT, &hsv_data, NULL);
+    
+    usbd_cli_write("Updated HSV value" USBD_CLI_LINE_BREAK, sizeof("Updated HSV value" USBD_CLI_LINE_BREAK));
+    
+    return NRF_SUCCESS;
+}
+
+
+USBD_CLI_ADD_COMMAND(RGB, "RGB <red> <green> <blue>", "Sets RGB color of LED. Max value - 255", cmd_rgb);
+USBD_CLI_ADD_COMMAND(HSV, "HSV <hue> <saturation> <value>", "Sets HSV color of LED. Max value - 255", cmd_hsv);
