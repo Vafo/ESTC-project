@@ -5,9 +5,11 @@ DFU_PACKAGE      := $(OUTPUT_DIRECTORY)/nrf52840_xxaa.dfu
 DFU_PORT         ?= /dev/ttyACM0
 
 GNU_INSTALL_ROOT ?= $(dir $(shell (which arm-none-eabi-gcc)))
-SDK_ROOT ?= $(HOME)/devel/esl-nsdk
+SDK_ROOT ?= $(HOME)/dev/embedded/base/esl-nsdk
 
 PROJ_DIR ?= ../
+
+ESTC_USB_CLI_ENABLED ?= 1
 
 $(OUTPUT_DIRECTORY)/nrf52840_xxaa.out: \
   LINKER_SCRIPT  := blinky_gcc_nrf52.ld
@@ -65,6 +67,7 @@ SRC_FILES += \
   $(PROJ_DIR)/modules/message_core.c \
   $(PROJ_DIR)/modules/message_agent.c \
   $(PROJ_DIR)/modules/nvmc_api.c \
+  $(PROJ_DIR)/modules/usbd_cli/usbd_cli.c \
   $(PROJ_DIR)/main-parts/main_click.c \
   $(PROJ_DIR)/main-parts/main_pwm.c \
   $(PROJ_DIR)/main-parts/main_logs.c \
@@ -73,6 +76,7 @@ SRC_FILES += \
   $(PROJ_DIR)/main-parts/message/agents/click_agent.c \
   $(PROJ_DIR)/main-parts/message/agents/picker_fsm_agent.c \
   $(PROJ_DIR)/main-parts/message/agents/nvmc_agent.c \
+  $(PROJ_DIR)/main-parts/message/agents/cli_agent.c \
   $(PROJ_DIR)/main.c \
 
   # $(PROJ_DIR)/main-parts/main_blinking.c // Outdated pwm used
@@ -140,6 +144,10 @@ CFLAGS += -DMBR_PRESENT
 CFLAGS += -DNRF52840_XXAA
 CFLAGS += -DAPP_TIMER_V2
 CFLAGS += -DAPP_TIMER_V2_RTC1_ENABLED
+# Doesnt work properly. Need to manually rebuild with make clean && make ESTC_USB_CLI_ENABLED=X dfu
+CFLAGS += -DESTC_USB_CLI_ENABLED=$(ESTC_USB_CLI_ENABLED)
+
+
 # CFLAGS += -DNRFX_SYSTICK_ENABLED
 
 CFLAGS += -mcpu=cortex-m4

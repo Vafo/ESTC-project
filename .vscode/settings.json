@@ -61,6 +61,14 @@
         "nvmc_api.h": "c",
         "nrfx_nvmc.h": "c",
         "nrf_dfu.h": "c",
-        "nrf_bootloader_info.h": "c"
+        "nrf_bootloader_info.h": "c",
+        "nrf_nvmc.h": "c",
+        "sdk_macros.h": "c",
+        "stdint.h": "c",
+        "app_usbd_cdc_desc.h": "c",
+        "app_usbd_serial_num.h": "c",
+        "app_usbd_cdc_acm.h": "c",
+        "nrf_queue.h": "c",
+        "nrf_section.h": "c"
     }
 }

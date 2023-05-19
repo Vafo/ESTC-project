@@ -30,6 +30,12 @@
 #ifndef APP_CONFIG_H
 #define APP_CONFIG_H
 
+// ESTC_USB_CLI_ENABLED - Enable usbd cli
+#ifndef ESTC_USB_CLI_ENABLED
+#define ESTC_USB_CLI_ENABLED 1
+#endif
+
+
 // <e> NRF_LOG_BACKEND_UART_ENABLED - nrf_log_backend_uart - Log UART backend
 //==========================================================
 #ifndef NRF_LOG_BACKEND_UART_ENABLED
