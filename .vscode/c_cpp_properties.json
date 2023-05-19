@@ -1,6 +1,6 @@
 {
     "env": {
-        "SDK_ROOT": "/home/user/devel/esl-nsdk",
+        "SDK_ROOT": "/home/vafo/dev/embedded/base/esl-nsdk",
         "SDK_CFG": "${workspaceFolder}/config",
         "PROJ_DIR": "${workspaceFolder}",
         "PROJ_PARTS": "${workspaceFolder}/main-parts",

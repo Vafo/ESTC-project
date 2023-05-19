@@ -5,7 +5,7 @@ DFU_PACKAGE      := $(OUTPUT_DIRECTORY)/nrf52840_xxaa.dfu
 DFU_PORT         ?= /dev/ttyACM0
 
 GNU_INSTALL_ROOT ?= $(dir $(shell (which arm-none-eabi-gcc)))
-SDK_ROOT ?= $(HOME)/devel/esl-nsdk
+SDK_ROOT ?= $(HOME)/dev/embedded/base/esl-nsdk
 
 PROJ_DIR ?= ../
 
@@ -65,6 +65,7 @@ SRC_FILES += \
   $(PROJ_DIR)/modules/message_core.c \
   $(PROJ_DIR)/modules/message_agent.c \
   $(PROJ_DIR)/modules/nvmc_api.c \
+  $(PROJ_DIR)/modules/usbd_cli/usbd_cli.c \
   $(PROJ_DIR)/main-parts/main_click.c \
   $(PROJ_DIR)/main-parts/main_pwm.c \
   $(PROJ_DIR)/main-parts/main_logs.c \
