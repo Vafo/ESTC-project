@@ -15,7 +15,6 @@
 
 int main(void)
 {
-    nrf_delay_ms(2500);
     NRF_LOG_INFO("Starting application");
     
     main_message_core_init();

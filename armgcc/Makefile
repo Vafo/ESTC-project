@@ -9,6 +9,8 @@ SDK_ROOT ?= $(HOME)/dev/embedded/base/esl-nsdk
 
 PROJ_DIR ?= ../
 
+ESTC_USB_CLI_ENABLED ?= 1
+
 $(OUTPUT_DIRECTORY)/nrf52840_xxaa.out: \
   LINKER_SCRIPT  := blinky_gcc_nrf52.ld
 
@@ -141,6 +143,10 @@ CFLAGS += -DMBR_PRESENT
 CFLAGS += -DNRF52840_XXAA
 CFLAGS += -DAPP_TIMER_V2
 CFLAGS += -DAPP_TIMER_V2_RTC1_ENABLED
+# Doesnt work properly. Need to manually rebuild with make clean && make ESTC_USB_CLI_ENABLED=X dfu
+CFLAGS += -DESTC_USB_CLI_ENABLED=$(ESTC_USB_CLI_ENABLED)
+
+
 # CFLAGS += -DNRFX_SYSTICK_ENABLED
 
 CFLAGS += -mcpu=cortex-m4

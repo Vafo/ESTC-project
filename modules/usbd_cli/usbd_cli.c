@@ -23,6 +23,8 @@
 #define READ_SIZE NRF_DRV_USBD_EPSIZE
 #define CMD_BUFFER_SIZE 256
 
+#if ESTC_USB_CLI_ENABLED == 1
+
 static char m_rx_buffer[READ_SIZE];
 static char m_tx_buffer[NRF_DRV_USBD_EPSIZE];
 static char m_cmd_buffer[CMD_BUFFER_SIZE];
@@ -297,3 +299,5 @@ ret_code_t cmd_help(char *args, usbd_cli_cmd_cb_t *p_usbd_cli_cb)
 
 
 USBD_CLI_ADD_COMMAND(help, "Display information about available commands", cmd_help);
+
+#endif // ESTC_USB_CLI_ENABLED == 1
