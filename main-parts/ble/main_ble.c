@@ -293,21 +293,21 @@ static void conn_params_init(void)
  *
  * @note This function will not return.
  */
-static void sleep_mode_enter(void)
-{
-    ret_code_t err_code;
+// static void sleep_mode_enter(void)
+// {
+//     ret_code_t err_code;
 
-    // err_code = bsp_indication_set(BSP_INDICATE_IDLE);
-    // APP_ERROR_CHECK(err_code);
+//     // err_code = bsp_indication_set(BSP_INDICATE_IDLE);
+//     // APP_ERROR_CHECK(err_code);
 
-    // // Prepare wakeup buttons.
-    // err_code = bsp_btn_ble_sleep_mode_prepare();
-    // APP_ERROR_CHECK(err_code);
+//     // // Prepare wakeup buttons.
+//     // err_code = bsp_btn_ble_sleep_mode_prepare();
+//     // APP_ERROR_CHECK(err_code);
 
-    // Go to system-off mode (this function will not return; wakeup will cause a reset).
-    err_code = sd_power_system_off();
-    APP_ERROR_CHECK(err_code);
-}
+//     // Go to system-off mode (this function will not return; wakeup will cause a reset).
+//     err_code = sd_power_system_off();
+//     APP_ERROR_CHECK(err_code);
+// }
 
 
 /**@brief Function for handling advertising events.
@@ -330,7 +330,9 @@ static void on_adv_evt(ble_adv_evt_t ble_adv_evt)
 
         case BLE_ADV_EVT_IDLE:
             NRF_LOG_INFO("ADV Event: idle, no connectable advertising is ongoing");
-            sleep_mode_enter();
+            // sleep_mode_enter();
+            NRF_LOG_INFO("... restarting adversting");
+            advertising_start();
             break;
 
         default:
@@ -538,10 +540,6 @@ static void advertising_start(void)
 int main_ble_init(void)
 {
     // Initialize.
-    // log_init();
-    // timers_init();
-    // buttons_leds_init();
-    // power_management_init();
     ble_stack_init();
     gap_params_init();
     gatt_init();

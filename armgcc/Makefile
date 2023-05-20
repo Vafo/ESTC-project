@@ -39,8 +39,6 @@ SRC_FILES += \
   $(SDK_ROOT)/components/libraries/util/nrf_assert.c \
   $(SDK_ROOT)/components/libraries/util/app_util_platform.c \
   $(SDK_ROOT)/components/libraries/util/app_error_weak.c \
-  $(SDK_ROOT)/components/libraries/util/app_error_handler_gcc.c \
-  $(SDK_ROOT)/components/libraries/util/app_error.c \
   $(SDK_ROOT)/components/libraries/usbd/class/cdc/acm/app_usbd_cdc_acm.c \
   $(SDK_ROOT)/components/libraries/usbd/app_usbd_string_desc.c \
   $(SDK_ROOT)/components/libraries/usbd/app_usbd_serial_num.c \
@@ -272,6 +270,8 @@ OPT = -O3 -g3
 
 # C flags common to all targets
 CFLAGS += $(OPT)
+CFLAGS += -DDEBUG=1
+CFLAGS += -DDEBUG_NRF
 CFLAGS += -DUSE_APP_CONFIG
 CFLAGS += -DAPP_TIMER_V2
 CFLAGS += -DAPP_TIMER_V2_RTC1_ENABLED

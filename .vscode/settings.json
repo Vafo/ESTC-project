@@ -76,6 +76,10 @@
         "nrf_sdh_soc.h": "c",
         "fds.h": "c",
         "nrf_sdh.h": "c",
-        "nrf_soc_app.h": "c"
+        "nrf_soc_app.h": "c",
+        "nrfx_errors.h": "c",
+        "apply_old_config.h": "c",
+        "app_error_weak.h": "c",
+        "functional": "c"
     }
 }
