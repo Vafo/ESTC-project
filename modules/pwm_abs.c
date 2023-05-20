@@ -89,7 +89,9 @@ nrfx_err_t pwm_abs_init(pwm_abs_ctx_t *ctx)
     _init_op_ctx(ctx);
 
     instances[inst_idx] = ctx;
-    nrfx_pwm_simple_playback(inst_ptr, seq_ptr, 1, NRFX_PWM_FLAG_LOOP | NRFX_PWM_FLAG_SIGNAL_END_SEQ0 | NRFX_PWM_FLAG_SIGNAL_END_SEQ1);
+    // nrfx_pwm_simple_playback(inst_ptr, seq_ptr, 1, NRFX_PWM_FLAG_LOOP | NRFX_PWM_FLAG_SIGNAL_END_SEQ0 | NRFX_PWM_FLAG_SIGNAL_END_SEQ1);
+    nrfx_pwm_simple_playback(inst_ptr, seq_ptr, 1, NRFX_PWM_FLAG_STOP );
+    
 
     return NRFX_SUCCESS;
 }

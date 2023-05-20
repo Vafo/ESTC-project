@@ -4,7 +4,17 @@
 // #include "bootloader/dfu/nrf_dfu.h"
 // #include "bootloader/nrf_bootloader_info.h"
 
-#include "nrfx_nvmc.h"
+
+// #include "nrfx_nvmc.h"
+#include "nrf_fstorage.h"
+
+#include "nrf_fstorage.h"
+#include "nrf_sdh.h"
+#include "nrf_sdh_ble.h"
+#include "nrf_fstorage_sd.h"
+#include "nrf_soc.h"
+
+#include "nrfx.h"
 
 #define NVMC_API_EMPTY_WORD_SLOT ( (nvmc_api_word_t) 0xFFFFFFFF )
 #define NVMC_API_EMPTY_BYTE_SLOT ( (nvmc_api_word_t) 0xFF)

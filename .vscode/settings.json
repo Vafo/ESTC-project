@@ -69,6 +69,13 @@
         "app_usbd_serial_num.h": "c",
         "app_usbd_cdc_acm.h": "c",
         "nrf_queue.h": "c",
-        "nrf_section.h": "c"
+        "nrf_section.h": "c",
+        "nrf_fstorage.h": "c",
+        "nrf_fstorage_sd.h": "c",
+        "main_ble.h": "c",
+        "nrf_sdh_soc.h": "c",
+        "fds.h": "c",
+        "nrf_sdh.h": "c",
+        "nrf_soc_app.h": "c"
     }
 }

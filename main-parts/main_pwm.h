@@ -15,7 +15,7 @@
 // <7=> 125 kHz 
 
 /** @brief PWM Base clock index. */
-#define MAIN_PWM_BASE_CLOCK 4
+#define MAIN_PWM_BASE_CLOCK 7
 
 typedef float (*main_pwm_math_fn)(float input, uint32_t top_value);
 

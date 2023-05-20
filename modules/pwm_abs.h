@@ -5,8 +5,6 @@
 #include "nrfx_pwm.h"
 #include "app_util.h"
 
-/** @brief PWM Base clock index. */
-#define MAIN_PWM_BASE_CLOCK 4
 
 /** 
  * @brief PWM Base clock frequency: index to Hz. 
