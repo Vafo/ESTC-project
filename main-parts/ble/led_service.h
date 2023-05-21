@@ -55,7 +55,7 @@
 #define LED_SERVICE_HVN_QUEUE_SIZE 2
 
 #define LED_SERVICE_DEF(_name)                                                                  \
-static ble_led_service_t _name;                                                                     \
+ble_led_service_t _name;                                                                     \
 NRF_SDH_BLE_OBSERVER(_name ## _ble_obs,                                                             \
                      BLE_ADV_BLE_OBSERVER_PRIO,                                                     \
                      led_ble_service_on_ble_event, &_name)
@@ -63,12 +63,14 @@ NRF_SDH_BLE_OBSERVER(_name ## _ble_obs,                                         
 #define LED_SERVICE_DECL(_name)                                                                  \
 extern ble_led_service_t _name;       
 
+#define BLE_LED_RGB_VALUE_MAX 255
+
 typedef struct
 {
-    uint8_t red;
-    uint8_t green;
-    uint8_t blue;
-} ble_led_set_char_value_t;
+    uint8_t red;    // Red component. Max - 255
+    uint8_t green;  // Green component. Max - 255
+    uint8_t blue;   // Blue component. Max - 255
+} ble_led_rgb_value_t;
 
 typedef struct
 {
@@ -82,15 +84,15 @@ typedef struct
 } ble_led_service_t;
 
 
-ret_code_t led_ble_service_init(ble_led_service_t *service);
+ret_code_t led_ble_service_init(ble_led_service_t *p_service);
 
-void led_ble_service_on_ble_event(const ble_evt_t *ble_evt, void *ctx);
+void led_ble_service_on_ble_event(const ble_evt_t *p_ble_evt, void *ctx);
 
-ret_code_t led_ble_service_led_state_update(ble_led_service_t *service);
+ret_code_t led_ble_service_led_state_update(ble_led_service_t *p_service, ble_led_rgb_value_t *p_value);
 
-ret_code_t led_ble_service_led_state_notify(ble_led_service_t *service);
+ret_code_t led_ble_service_led_state_notify(ble_led_service_t *p_service);
 
-ret_code_t led_ble_service_led_set_save_value(ble_led_service_t *service);
+ret_code_t led_ble_service_led_set_save_value(ble_led_service_t *p_service);
 
 
 #endif /* LED_SERVICE_H__ */

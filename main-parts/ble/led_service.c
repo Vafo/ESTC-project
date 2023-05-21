@@ -43,10 +43,8 @@ ble_uuid128_t base_uuid = {
     .uuid128 = LED_BASE_UUID
 };
 
-uint8_t m_char_user_desc[] = "Custom Characteristic";
-
-uint8_t m_char_led_state_val[] = "Hello";
-uint8_t m_char_led_state_val_reversed[] = "olleH";
+uint8_t m_char_led_set_desc[] = "Set RGB Value (0x??&&@@ format)";
+uint8_t m_char_led_state_desc[] = "Current RGB Value (0x??&&@@ format)";
 
 static ret_code_t led_ble_add_characteristics(ble_led_service_t *service);
 static ret_code_t led_ble_check_user_need_for_hvx(uint16_t conn_handle, uint16_t cccd_handle, uint16_t hvx_type);
@@ -112,10 +110,10 @@ void led_ble_service_on_ble_event(const ble_evt_t *p_ble_evt, void *ctx)
                 break;
             }
             
-            if(led_gatts_write_evt.len != sizeof(ble_led_set_char_value_t) || led_gatts_write_evt.offset != 0)
+            if(led_gatts_write_evt.len != sizeof(ble_led_rgb_value_t) || led_gatts_write_evt.offset != 0)
             {
                 NRF_LOG_INFO("Bad length in Write Command Size %d != %d offset %d", \
-                    led_gatts_write_evt.len, sizeof(ble_led_set_char_value_t), \
+                    led_gatts_write_evt.len, sizeof(ble_led_rgb_value_t), \
                     led_gatts_write_evt.offset);
                 break;
             }
@@ -190,9 +188,10 @@ static ret_code_t led_ble_add_characteristics(ble_led_service_t *service)
     // char_md.char_props.auth_signed_wr = 1;
     
     // Add User Description Descriptor
-    char_md.p_char_user_desc = m_char_user_desc;
-    char_md.char_user_desc_size = sizeof(m_char_user_desc) / sizeof(m_char_user_desc[0]);
-    char_md.char_user_desc_max_size = sizeof(m_char_user_desc) / sizeof(m_char_user_desc[0]);
+    char_md.p_char_user_desc = m_char_led_set_desc;
+    
+    char_md.char_user_desc_size = ARRAY_SIZE(m_char_led_set_desc);
+    char_md.char_user_desc_max_size = ARRAY_SIZE(m_char_led_set_desc);
     char_md.p_user_desc_md = NULL;  // Default md values of user descr attr 
 
     // Configures attribute metadata. For now we only specify that the attribute will be stored in the softdevice
@@ -211,8 +210,8 @@ static ret_code_t led_ble_add_characteristics(ble_led_service_t *service)
     attr_char_value.p_uuid = &char_uuid;
 
     // TODO: 6.7. Set characteristic length in number of bytes in attr_char_value structure
-    attr_char_value.init_len = sizeof(ble_led_set_char_value_t);
-    attr_char_value.max_len = sizeof(ble_led_set_char_value_t);
+    attr_char_value.init_len = sizeof(ble_led_rgb_value_t);
+    attr_char_value.max_len = sizeof(ble_led_rgb_value_t);
 
     // TODO: 6.4. Add new characteristic to the service using `sd_ble_gatts_characteristic_add`
     error_code = sd_ble_gatts_characteristic_add(service->service_handle, &char_md, &attr_char_value, &service->char_led_set);
@@ -233,15 +232,15 @@ static ret_code_t led_ble_add_characteristics(ble_led_service_t *service)
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&char_led_state_cccd_md.read_perm);
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&char_led_state_cccd_md.write_perm);
 
-    ble_gatts_char_pf_t char_led_state_pf = {
-        .format = BLE_GATT_CPF_FORMAT_UTF8S,
-    };
-
     ble_gatts_char_md_t char_led_state_md = {0};
     char_led_state_md.char_props.read = 1;
     char_led_state_md.char_props.notify = 1;
-    char_led_state_md.p_char_pf = &char_led_state_pf;
     char_led_state_md.p_cccd_md = &char_led_state_cccd_md;
+
+    char_led_state_md.p_char_user_desc = m_char_led_state_desc;
+    char_led_state_md.char_user_desc_size = ARRAY_SIZE(m_char_led_state_desc);
+    char_led_state_md.char_user_desc_max_size = ARRAY_SIZE(m_char_led_state_desc);
+    char_led_state_md.p_user_desc_md = NULL;
     
     ble_gatts_attr_md_t char_led_state_value_md = {0};
     char_led_state_value_md.vloc = BLE_GATTS_VLOC_STACK;
@@ -250,9 +249,8 @@ static ret_code_t led_ble_add_characteristics(ble_led_service_t *service)
     ble_gatts_attr_t char_led_state_value = {0};
     char_led_state_value.p_attr_md = &char_led_state_value_md;
     char_led_state_value.p_uuid = &char_led_state_uuid;
-    char_led_state_value.p_value = m_char_led_state_val;
-    char_led_state_value.init_len = sizeof(m_char_led_state_val) / sizeof(m_char_led_state_val[0]);
-    char_led_state_value.max_len = sizeof(m_char_led_state_val) / sizeof(m_char_led_state_val[0]);
+    char_led_state_value.init_len = sizeof(ble_led_rgb_value_t);
+    char_led_state_value.max_len = sizeof(ble_led_rgb_value_t);
     
     error_code = sd_ble_gatts_characteristic_add(service->service_handle, &char_led_state_md, &char_led_state_value, &service->char_led_state);
     APP_ERROR_CHECK(error_code);
@@ -260,18 +258,13 @@ static ret_code_t led_ble_add_characteristics(ble_led_service_t *service)
     return NRF_SUCCESS;
 }
 
-ret_code_t led_ble_service_led_state_update(ble_led_service_t *service)
+ret_code_t led_ble_service_led_state_update(ble_led_service_t *service, ble_led_rgb_value_t *p_value)
 {
-    static uint8_t inverter = 0;
     ret_code_t error_code = NRF_SUCCESS;
 
-    uint16_t val_len = inverter ? sizeof(m_char_led_state_val_reversed) / sizeof(m_char_led_state_val_reversed[0]) : \
-                                  sizeof(m_char_led_state_val) / sizeof(m_char_led_state_val[0]);
-    uint8_t *val = inverter ? m_char_led_state_val_reversed : m_char_led_state_val;
-
     ble_gatts_value_t new_val = {
-        .p_value = val,
-        .len = val_len,
+        .p_value = (uint8_t *) p_value,
+        .len = sizeof(ble_led_rgb_value_t),
         .offset = 0
     };
 
@@ -282,10 +275,8 @@ ret_code_t led_ble_service_led_state_update(ble_led_service_t *service)
     
     if(error_code == NRF_SUCCESS)
     {
-        NRF_LOG_INFO("Notified with val %s, val_len = %d", val, val_len);
+        NRF_LOG_INFO("Notified with val (%d, %d, %d)", p_value->red, p_value->green, p_value->blue);
     }
-
-    inverter ^= 1;
 
     return NRF_SUCCESS;
 }

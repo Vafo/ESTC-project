@@ -3,6 +3,7 @@
 
 #include "message_core.h"
 
+// All transfers of colors are sent in form of hsv (struct)
 typedef enum {
     PRESS_EVENT,
     RELEASE_EVENT,
@@ -10,6 +11,7 @@ typedef enum {
     SAVE_LED_EVENT,
     GET_LED_EVENT,
     LOADED_LED_EVENT,
+    PICKER_LED_EVENT,   // Event intended to be made by FSM with current HSV as data. Triggered by button release
 
     MESSAGE_EVENT_NUMBER
 } message_event;
