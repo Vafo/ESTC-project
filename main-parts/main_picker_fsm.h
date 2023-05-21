@@ -28,6 +28,7 @@ typedef struct
     float set_period_to;
 } picker_fsm_ctx_t;
 
+extern picker_fsm_ctx_t fsm_inst;
 
 void picker_fsm_init();
 void picker_fsm_next_state();

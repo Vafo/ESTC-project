@@ -102,7 +102,7 @@ static void usb_ev_handler(app_usbd_class_inst_t const * p_inst,
     }
     case APP_USBD_CDC_ACM_USER_EVT_TX_DONE:
     {
-        NRF_LOG_INFO("tx done");
+        // NRF_LOG_INFO("tx done");
         m_usb_tx_available = 1;
         break;
     }
@@ -114,7 +114,7 @@ static void usb_ev_handler(app_usbd_class_inst_t const * p_inst,
             size_t copy_len;
             /*Get amount of data transfered*/
             size_t size = app_usbd_cdc_acm_rx_size(&usb_cdc_acm);
-            NRF_LOG_INFO("rx size: %d", size);
+            // NRF_LOG_INFO("rx size: %d", size);
 
             /* It's the simple version of an echo. Note that writing doesn't
              * block execution, and if we have a lot of characters to read and
@@ -188,6 +188,11 @@ static void usb_cli_process_echo()
 
 static void usb_cli_process_cmd()
 {
+    if(!m_usb_port_open)
+    {
+        return;
+    }
+
     if(m_usbd_cmd_cb.is_delayed)
     {
         return;
@@ -211,6 +216,7 @@ static void usb_cli_process_cmd()
         {
             *m_usbd_cmd_buf_cb.arg_start = tmp_char;
             cmd_entry->cmd_handler(m_usbd_cmd_buf_cb.arg_start, &m_usbd_cmd_cb);
+            NRF_LOG_INFO("Executed command %s with args %s", cmd_entry->p_cmd_name, m_usbd_cmd_buf_cb.arg_start);
             break;
         }
     }
@@ -226,7 +232,6 @@ static void usb_cli_process_cmd()
     usbd_cli_write(USBD_CLI_LINE_BEGIN, sizeof(USBD_CLI_LINE_BEGIN));
 }
 
-char hello_msg[] = "HELO";
 
 bool usbd_cli_process()
 {

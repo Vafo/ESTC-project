@@ -23,6 +23,7 @@ void nvmc_agent_save_hsv(hsv *src)
     nvmc_api_read_next_n_bytes(&nvmc_state, (nvmc_api_byte_t *) &hsv_a, sizeof(hsv));
     hsv_to_rgb(&hsv_a, &rgb_tmp);
     NRF_LOG_INFO("ACTUAL R : %d | G : %d | B : %d |" , rgb_tmp.r * 1000, rgb_tmp.g * 1000, rgb_tmp.b * 1000);
+    NRF_LOG_INFO("AT %x", nvmc_api_get_cur_read_pos(&nvmc_state) - sizeof(hsv));
     
     
     nvmc_api_set_cur_read_pos(&nvmc_state, prev_pos);

@@ -1,4 +1,5 @@
 #include "pwm_abs.h"
+#include "nrf_log.h"
 
 static pwm_abs_ctx_t *instances[NRFX_PWM_ENABLED_COUNT];
 
@@ -83,13 +84,14 @@ nrfx_err_t pwm_abs_init(pwm_abs_ctx_t *ctx)
 
     NRFX_ASSERT(inst_idx >= 0 && inst_idx < NRFX_PWM_ENABLED_COUNT);
 
-    nrfx_pwm_uninit(inst_ptr);
+    // nrfx_pwm_uninit(inst_ptr);
     nrfx_pwm_init(inst_ptr, cfg_ptr, pwm_abs_inst_handlers[inst_idx]);
 
     _init_op_ctx(ctx);
 
     instances[inst_idx] = ctx;
     nrfx_pwm_simple_playback(inst_ptr, seq_ptr, 1, NRFX_PWM_FLAG_LOOP | NRFX_PWM_FLAG_SIGNAL_END_SEQ0 | NRFX_PWM_FLAG_SIGNAL_END_SEQ1);
+    
 
     return NRFX_SUCCESS;
 }
