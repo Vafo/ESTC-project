@@ -80,6 +80,10 @@
         "nrfx_errors.h": "c",
         "apply_old_config.h": "c",
         "app_error_weak.h": "c",
-        "functional": "c"
+        "functional": "c",
+        "usbd_cli.h": "c",
+        "led_service.h": "c",
+        "ble_agent.h": "c",
+        "message_core.h": "c"
     }
 }

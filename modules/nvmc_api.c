@@ -119,10 +119,10 @@ nrfx_err_t nvmc_api_write_next_word(nvmc_state_t *nvmc_state, nvmc_api_word_t *s
     VERIFY_TRUE(IS_VALID_POS_IN_PAGE(nvmc_api_get_cur_write_pos(nvmc_state) + sizeof(nvmc_api_word_t) - 1, nvmc_state->page_no), \
                 NRF_ERROR_INVALID_LENGTH);
 
-    nvmc_api_wait_until_written();
     // nrfx_nvmc_word_write(nvmc_state->cur_write_pos, *src);
     nrf_fstorage_write(&fstorage, nvmc_state->cur_write_pos, src, sizeof(nvmc_api_word_t), NULL);
     nvmc_state->cur_write_pos += sizeof(nvmc_api_word_t);
+    nvmc_api_wait_until_written();
 
     return NRF_SUCCESS;
 }
@@ -177,9 +177,9 @@ nrfx_err_t nvmc_api_write_next_n_bytes(nvmc_state_t *nvmc_state, nvmc_api_byte_t
     // nvmc_api_byte_t *cur_loc;
     
 
-    nvmc_api_wait_until_written();
     // nrfx_nvmc_bytes_write(nvmc_state->cur_write_pos, (const void *) src, num_bytes);
     nrf_fstorage_write(&fstorage, nvmc_state->cur_write_pos, src, num_bytes, NULL);
+    nvmc_api_wait_until_written();
 
     nvmc_api_set_cur_write_pos(nvmc_state, (nvmc_state->cur_write_pos + sizeof(nvmc_api_byte_t) * num_bytes) );
     
