@@ -28,8 +28,8 @@
  * SUCH DAMAGE
 */
 
-#ifndef ESTC_SERVICE_H__
-#define ESTC_SERVICE_H__
+#ifndef LED_SERVICE_H__
+#define LED_SERVICE_H__
 
 #include <stdint.h>
 
@@ -38,7 +38,7 @@
 
 // TODO: 1. Generate random BLE UUID (Version 4 UUID) and define it in the following format:
 // A5DBxxxx-03AB-450D-B840-4B3F25293BAD
-#define ESTC_BASE_UUID { 0xAD, 0x3B, 0x29, 0x25, 0x3F, 0x4B,    \
+#define LED_BASE_UUID { 0xAD, 0x3B, 0x29, 0x25, 0x3F, 0x4B,    \
                          /* - */ 0x40, 0xB8,                    \
                          /* - */ 0x0D, 0x45,                    \
                          /* - */ 0xAB, 0x03,                    \
@@ -46,20 +46,29 @@
 
 
 // TODO: 2. Pick a random service 16-bit UUID and define it:
-#define ESTC_SERVICE_UUID 0xABBA
+#define LED_SERVICE_UUID 0xABBA
 
 // TODO: 3. Pick a characteristic UUID and define it:
-#define ESTC_GATT_CHAR_1_UUID 0xABBB
-#define ESTC_GATT_CHAR_HELLO_UUID 0xABBC
-#define ESTC_GATT_CHAR_BTN_STATE_UUID 0xABBD
+#define LED_GATT_CHAR_LED_SET 0xABBB
+#define LED_GATT_CHAR_LED_STATE 0xABBC
 
-#define ESTC_SERVICE_HVN_QUEUE_SIZE 2
+#define LED_SERVICE_HVN_QUEUE_SIZE 2
 
-#define ESTC_SERVICE_DEF(_name)                                                                  \
-static ble_estc_service_t _name;                                                                     \
+#define LED_SERVICE_DEF(_name)                                                                  \
+static ble_led_service_t _name;                                                                     \
 NRF_SDH_BLE_OBSERVER(_name ## _ble_obs,                                                             \
                      BLE_ADV_BLE_OBSERVER_PRIO,                                                     \
-                     estc_ble_service_on_ble_event, &_name)
+                     led_ble_service_on_ble_event, &_name)
+
+#define LED_SERVICE_DECL(_name)                                                                  \
+extern ble_led_service_t _name;       
+
+typedef struct
+{
+    uint8_t red;
+    uint8_t green;
+    uint8_t blue;
+} ble_led_set_char_value_t;
 
 typedef struct
 {
@@ -68,22 +77,20 @@ typedef struct
     uint16_t hvn_available_queue_element_count;
     uint8_t inidication_free;
     // TODO: 6.3. Add handles for characterstic (type: ble_gatts_char_handles_t)
-    ble_gatts_char_handles_t char_1;
-    ble_gatts_char_handles_t char_hello;
-    ble_gatts_char_handles_t char_btn_state;
-} ble_estc_service_t;
+    ble_gatts_char_handles_t char_led_set;
+    ble_gatts_char_handles_t char_led_state;
+} ble_led_service_t;
 
 
-ret_code_t estc_ble_service_init(ble_estc_service_t *service);
+ret_code_t led_ble_service_init(ble_led_service_t *service);
 
-void estc_ble_service_on_ble_event(const ble_evt_t *ble_evt, void *ctx);
+void led_ble_service_on_ble_event(const ble_evt_t *ble_evt, void *ctx);
 
-ret_code_t estc_ble_service_hello_update(ble_estc_service_t *service);
+ret_code_t led_ble_service_led_state_update(ble_led_service_t *service);
 
-ret_code_t estc_ble_service_hello_notify(ble_estc_service_t *service);
+ret_code_t led_ble_service_led_state_notify(ble_led_service_t *service);
 
-ret_code_t estc_ble_service_btn_state_set(ble_estc_service_t *service, uint8_t *new_state);
+ret_code_t led_ble_service_led_set_save_value(ble_led_service_t *service);
 
-ret_code_t estc_ble_service_btn_state_indicate(ble_estc_service_t *service);
 
-#endif /* ESTC_SERVICE_H__ */
+#endif /* LED_SERVICE_H__ */

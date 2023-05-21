@@ -109,11 +109,13 @@ SRC_FILES += \
   $(PROJ_DIR)/main-parts/main_pwm.c \
   $(PROJ_DIR)/main-parts/main_logs.c \
   $(PROJ_DIR)/main-parts/main_picker_fsm.c \
+  $(PROJ_DIR)/main-parts/main_error.c \
   $(PROJ_DIR)/main-parts/message/main_message_core.c \
   $(PROJ_DIR)/main-parts/message/agents/click_agent.c \
   $(PROJ_DIR)/main-parts/message/agents/picker_fsm_agent.c \
   $(PROJ_DIR)/main-parts/message/agents/nvmc_agent.c \
   $(PROJ_DIR)/main-parts/message/agents/cli_agent.c \
+  $(PROJ_DIR)/main-parts/message/agents/ble_agent.c \
   $(PROJ_DIR)/main-parts/ble/main_ble.c \
   $(PROJ_DIR)/main-parts/ble/led_service.c \
   $(PROJ_DIR)/main.c \
@@ -270,8 +272,8 @@ OPT = -O3 -g3
 
 # C flags common to all targets
 CFLAGS += $(OPT)
-CFLAGS += -DDEBUG=1
-CFLAGS += -DDEBUG_NRF
+# CFLAGS += -DDEBUG=1
+# CFLAGS += -DDEBUG_NRF
 CFLAGS += -DUSE_APP_CONFIG
 CFLAGS += -DAPP_TIMER_V2
 CFLAGS += -DAPP_TIMER_V2_RTC1_ENABLED

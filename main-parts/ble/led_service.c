@@ -37,24 +37,26 @@
 #include "ble_gatts.h"
 #include "ble_srv_common.h"
 
+#include "hsv_rgb.h"
+
 ble_uuid128_t base_uuid = {
-    .uuid128 = ESTC_BASE_UUID
+    .uuid128 = LED_BASE_UUID
 };
 
 uint8_t m_char_user_desc[] = "Custom Characteristic";
 
-uint8_t m_char_hello_val[] = "Hello";
-uint8_t m_char_hello_val_reversed[] = "olleH";
+uint8_t m_char_led_state_val[] = "Hello";
+uint8_t m_char_led_state_val_reversed[] = "olleH";
 
-static ret_code_t estc_ble_add_characteristics(ble_estc_service_t *service);
-static ret_code_t estc_ble_check_user_need_for_hvx(uint16_t conn_handle, uint16_t cccd_handle, uint16_t hvx_type);
+static ret_code_t led_ble_add_characteristics(ble_led_service_t *service);
+static ret_code_t led_ble_check_user_need_for_hvx(uint16_t conn_handle, uint16_t cccd_handle, uint16_t hvx_type);
 
-ret_code_t estc_ble_service_init(ble_estc_service_t *service)
+ret_code_t led_ble_service_init(ble_led_service_t *service)
 {
     VERIFY_PARAM_NOT_NULL(service);
     ret_code_t error_code = NRF_SUCCESS;
     ble_uuid_t service_uuid = {
-        .uuid = ESTC_SERVICE_UUID
+        .uuid = LED_SERVICE_UUID
     };
 
     // TODO: 4. Add service UUIDs to the BLE stack table using `sd_ble_uuid_vs_add`
@@ -71,46 +73,64 @@ ret_code_t estc_ble_service_init(ble_estc_service_t *service)
 
     service->connection_handle = BLE_CONN_HANDLE_INVALID;
 
-    return estc_ble_add_characteristics(service);
+    return led_ble_add_characteristics(service);
 }
 
-void estc_ble_service_on_ble_event(const ble_evt_t *p_ble_evt, void *ctx)
+void led_ble_service_on_ble_event(const ble_evt_t *p_ble_evt, void *ctx)
 {
     // ret_code_t err_code = NRF_SUCCESS;
-    ble_estc_service_t *p_estc_service = (ble_estc_service_t *) ctx;
+    ble_led_service_t *p_led_service = (ble_led_service_t *) ctx;
+    ble_gatts_evt_write_t led_gatts_write_evt;
     uint16_t m_conn_handle;
 
     switch (p_ble_evt->header.evt_id)
     {
         case BLE_GAP_EVT_DISCONNECTED:
-            p_estc_service->connection_handle = BLE_CONN_HANDLE_INVALID;
+            p_led_service->connection_handle = BLE_CONN_HANDLE_INVALID;
             break;
 
         case BLE_GAP_EVT_CONNECTED:
             m_conn_handle = p_ble_evt->evt.gap_evt.conn_handle;
-            p_estc_service->connection_handle = m_conn_handle;
+            p_led_service->connection_handle = m_conn_handle;
 
-            p_estc_service->hvn_available_queue_element_count = ESTC_SERVICE_HVN_QUEUE_SIZE;
-            p_estc_service->inidication_free = 1;
+            p_led_service->hvn_available_queue_element_count = LED_SERVICE_HVN_QUEUE_SIZE;
+            p_led_service->inidication_free = 1;
+            break;
+
+        case BLE_GATTS_EVT_WRITE:
+            led_gatts_write_evt = p_ble_evt->evt.gatts_evt.params.write;
+            m_conn_handle = p_ble_evt->evt.gatts_evt.conn_handle;
+
+            if(m_conn_handle != p_led_service->connection_handle)
+            {
+                break;
+            }
+            NRF_LOG_INFO("AUTH %d OP %d", led_gatts_write_evt.auth_required, led_gatts_write_evt.op);
+            
+            
+            if(led_gatts_write_evt.uuid.uuid == LED_GATT_CHAR_LED_SET && \
+               led_gatts_write_evt.handle == p_led_service->char_led_set.value_handle)
+            {
+                led_ble_service_led_set_save_value(p_led_service);
+            }
+
             break;
 
         case BLE_GATTS_EVT_HVN_TX_COMPLETE:
             m_conn_handle = p_ble_evt->evt.gatts_evt.conn_handle;
-            if(m_conn_handle == p_estc_service->connection_handle)
+            if(m_conn_handle == p_led_service->connection_handle)
             {
-                p_estc_service->hvn_available_queue_element_count += \
+                p_led_service->hvn_available_queue_element_count += \
                             p_ble_evt->evt.gatts_evt.params.hvn_tx_complete.count;
             }
             break;
 
         case BLE_GATTS_EVT_HVC:
             m_conn_handle = p_ble_evt->evt.gatts_evt.conn_handle;
-            if(m_conn_handle == p_estc_service->connection_handle)
+            if(m_conn_handle == p_led_service->connection_handle)
             {
-                if(p_estc_service->char_btn_state.value_handle == p_ble_evt->evt.gatts_evt.params.hvc.handle)
-                {
-                    p_estc_service->inidication_free = 1;
-                }
+                // Check for corresponding char handle
+                p_led_service->inidication_free = 1;
             }
             break;
 
@@ -118,9 +138,9 @@ void estc_ble_service_on_ble_event(const ble_evt_t *p_ble_evt, void *ctx)
             // Disconnect on GATT Server timeout event.
             m_conn_handle = p_ble_evt->evt.gatts_evt.conn_handle;
             
-            if(m_conn_handle == p_estc_service->connection_handle)
+            if(m_conn_handle == p_led_service->connection_handle)
             {
-                p_estc_service->connection_handle = BLE_CONN_HANDLE_INVALID;
+                p_led_service->connection_handle = BLE_CONN_HANDLE_INVALID;
             }
             break;
 
@@ -132,12 +152,14 @@ void estc_ble_service_on_ble_event(const ble_evt_t *p_ble_evt, void *ctx)
     }
 }
 
-static ret_code_t estc_ble_add_characteristics(ble_estc_service_t *service)
+static ret_code_t led_ble_add_characteristics(ble_led_service_t *service)
 {
     VERIFY_PARAM_NOT_NULL(service);
     ret_code_t error_code = NRF_SUCCESS;
+
+    // LED Set Charachteristic
     ble_uuid_t char_uuid = {
-        .uuid = ESTC_GATT_CHAR_1_UUID
+        .uuid = LED_GATT_CHAR_LED_SET
     };
 
     // TODO: 6.1. Add custom characteristic UUID using `sd_ble_uuid_vs_add`, same as in step 4
@@ -146,8 +168,9 @@ static ret_code_t estc_ble_add_characteristics(ble_estc_service_t *service)
 
     // TODO: 6.5. Configure Characteristic metadata (enable read and write)
     ble_gatts_char_md_t char_md = { 0 };
-    char_md.char_props.read = 1;
+    // char_md.char_props.read = 1;
     char_md.char_props.write = 1;
+    char_md.char_props.auth_signed_wr = 1;
     
     // Add User Description Descriptor
     char_md.p_char_user_desc = m_char_user_desc;
@@ -170,109 +193,62 @@ static ret_code_t estc_ble_add_characteristics(ble_estc_service_t *service)
     attr_char_value.p_uuid = &char_uuid;
 
     // TODO: 6.7. Set characteristic length in number of bytes in attr_char_value structure
-    attr_char_value.init_len = sizeof(uint16_t);
-    attr_char_value.max_len = sizeof(uint16_t);
+    attr_char_value.init_len = sizeof(ble_led_set_char_value_t);
+    attr_char_value.max_len = sizeof(ble_led_set_char_value_t);
 
     // TODO: 6.4. Add new characteristic to the service using `sd_ble_gatts_characteristic_add`
-    error_code = sd_ble_gatts_characteristic_add(service->service_handle, &char_md, &attr_char_value, &service->char_1);
+    error_code = sd_ble_gatts_characteristic_add(service->service_handle, &char_md, &attr_char_value, &service->char_led_set);
     APP_ERROR_CHECK(error_code);
 
-    // Hello Characteristic
-    ble_uuid_t char_hello_uuid = {
-        .uuid = ESTC_GATT_CHAR_HELLO_UUID
+    // LED State Characteristic
+    ble_uuid_t char_led_state_uuid = {
+        .uuid = LED_GATT_CHAR_LED_STATE
     };
 
-    error_code = sd_ble_uuid_vs_add(&base_uuid, &char_hello_uuid.type);
+    error_code = sd_ble_uuid_vs_add(&base_uuid, &char_led_state_uuid.type);
     APP_ERROR_CHECK(error_code);
 
-    ble_gatts_attr_md_t char_hello_cccd_md = {
+    ble_gatts_attr_md_t char_led_state_cccd_md = {
         .vloc = BLE_GATTS_VLOC_STACK
     };
-    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&char_hello_cccd_md.read_perm);
-    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&char_hello_cccd_md.write_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&char_led_state_cccd_md.read_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&char_led_state_cccd_md.write_perm);
 
-    ble_gatts_char_pf_t char_hello_pf = {
+    ble_gatts_char_pf_t char_led_state_pf = {
         .format = BLE_GATT_CPF_FORMAT_UTF8S,
     };
 
-    ble_gatts_char_md_t char_hello_md = {0};
-    char_hello_md.char_props.read = 1;
-    char_hello_md.char_props.notify = 1;
-    char_hello_md.p_char_pf = &char_hello_pf;
-    char_hello_md.p_cccd_md = &char_hello_cccd_md;
+    ble_gatts_char_md_t char_led_state_md = {0};
+    char_led_state_md.char_props.read = 1;
+    char_led_state_md.char_props.notify = 1;
+    char_led_state_md.p_char_pf = &char_led_state_pf;
+    char_led_state_md.p_cccd_md = &char_led_state_cccd_md;
     
-    ble_gatts_attr_md_t char_hello_value_md = {0};
-    char_hello_value_md.vloc = BLE_GATTS_VLOC_STACK;
-    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&char_hello_value_md.read_perm);
+    ble_gatts_attr_md_t char_led_state_value_md = {0};
+    char_led_state_value_md.vloc = BLE_GATTS_VLOC_STACK;
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&char_led_state_value_md.read_perm);
 
-    ble_gatts_attr_t char_hello_value = {0};
-    char_hello_value.p_attr_md = &char_hello_value_md;
-    char_hello_value.p_uuid = &char_hello_uuid;
-    char_hello_value.p_value = m_char_hello_val;
-    char_hello_value.init_len = sizeof(m_char_hello_val) / sizeof(m_char_hello_val[0]);
-    char_hello_value.max_len = sizeof(m_char_hello_val) / sizeof(m_char_hello_val[0]);
+    ble_gatts_attr_t char_led_state_value = {0};
+    char_led_state_value.p_attr_md = &char_led_state_value_md;
+    char_led_state_value.p_uuid = &char_led_state_uuid;
+    char_led_state_value.p_value = m_char_led_state_val;
+    char_led_state_value.init_len = sizeof(m_char_led_state_val) / sizeof(m_char_led_state_val[0]);
+    char_led_state_value.max_len = sizeof(m_char_led_state_val) / sizeof(m_char_led_state_val[0]);
     
-    error_code = sd_ble_gatts_characteristic_add(service->service_handle, &char_hello_md, &char_hello_value, &service->char_hello);
-    APP_ERROR_CHECK(error_code);
-
-    // BTN_STATE Charecteristic
-
-    ble_uuid_t btn_st_uuid = {
-        .uuid = ESTC_GATT_CHAR_BTN_STATE_UUID
-    };
-
-    error_code = sd_ble_uuid_vs_add(&base_uuid, &btn_st_uuid.type);
-    APP_ERROR_CHECK(error_code);
-
-    ble_gatts_char_md_t btn_st_char_md = {0};
-
-    ble_gatts_attr_md_t btn_st_cccd_md = {
-        .vloc = BLE_GATTS_VLOC_STACK
-    };
-
-    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&btn_st_cccd_md.read_perm);
-    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&btn_st_cccd_md.write_perm);
-
-    ble_gatts_char_pf_t btn_st_char_pf = {
-        .format = BLE_GATT_CPF_FORMAT_BOOLEAN
-    };
-
-    btn_st_char_md.char_props.read = 1;
-    btn_st_char_md.char_props.indicate = 1;
-    btn_st_char_md.p_char_pf = &btn_st_char_pf;
-    btn_st_char_md.p_cccd_md = &btn_st_cccd_md;
-
-
-    ble_gatts_attr_t btn_st_value = {0};
-
-    ble_gatts_attr_md_t btn_st_value_md = {
-        .vloc = BLE_GATTS_VLOC_STACK
-    };
-
-    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&btn_st_value_md.read_perm);
-
-    uint8_t btn_st_init_val = 0;
-
-    btn_st_value.p_attr_md = &btn_st_value_md;
-    btn_st_value.p_uuid = &btn_st_uuid;
-    btn_st_value.init_len = sizeof(uint8_t);
-    btn_st_value.max_len = sizeof(uint8_t);
-    btn_st_value.p_value = &btn_st_init_val;
-
-    error_code = sd_ble_gatts_characteristic_add(service->service_handle, &btn_st_char_md, &btn_st_value, &service->char_btn_state);
+    error_code = sd_ble_gatts_characteristic_add(service->service_handle, &char_led_state_md, &char_led_state_value, &service->char_led_state);
     APP_ERROR_CHECK(error_code);
 
     return NRF_SUCCESS;
 }
 
-ret_code_t estc_ble_service_hello_update(ble_estc_service_t *service)
+ret_code_t led_ble_service_led_state_update(ble_led_service_t *service)
 {
     static uint8_t inverter = 0;
     ret_code_t error_code = NRF_SUCCESS;
 
-    uint16_t val_len = inverter ? sizeof(m_char_hello_val_reversed) / sizeof(m_char_hello_val_reversed[0]) : \
-                                  sizeof(m_char_hello_val) / sizeof(m_char_hello_val[0]);
-    uint8_t *val = inverter ? m_char_hello_val_reversed : m_char_hello_val;
+    uint16_t val_len = inverter ? sizeof(m_char_led_state_val_reversed) / sizeof(m_char_led_state_val_reversed[0]) : \
+                                  sizeof(m_char_led_state_val) / sizeof(m_char_led_state_val[0]);
+    uint8_t *val = inverter ? m_char_led_state_val_reversed : m_char_led_state_val;
 
     ble_gatts_value_t new_val = {
         .p_value = val,
@@ -280,10 +256,10 @@ ret_code_t estc_ble_service_hello_update(ble_estc_service_t *service)
         .offset = 0
     };
 
-    error_code = sd_ble_gatts_value_set(service->connection_handle, service->char_hello.value_handle, &new_val);
+    error_code = sd_ble_gatts_value_set(service->connection_handle, service->char_led_state.value_handle, &new_val);
     APP_ERROR_CHECK(error_code);
 
-    error_code = estc_ble_service_hello_notify(service);
+    error_code = led_ble_service_led_state_notify(service);
     
     if(error_code == NRF_SUCCESS)
     {
@@ -296,7 +272,7 @@ ret_code_t estc_ble_service_hello_update(ble_estc_service_t *service)
 }
 
 // Check for events
-ret_code_t estc_ble_service_hello_notify(ble_estc_service_t *service)
+ret_code_t led_ble_service_led_state_notify(ble_led_service_t *service)
 {
     NRF_LOG_INFO("Trying to notify ...");
     if(service->connection_handle == BLE_CONN_HANDLE_INVALID)
@@ -306,7 +282,7 @@ ret_code_t estc_ble_service_hello_notify(ble_estc_service_t *service)
     }
     ret_code_t error_code = NRF_SUCCESS;
 
-    error_code = estc_ble_check_user_need_for_hvx(service->connection_handle, service->char_hello.cccd_handle, BLE_GATT_HVX_NOTIFICATION);
+    error_code = led_ble_check_user_need_for_hvx(service->connection_handle, service->char_led_state.cccd_handle, BLE_GATT_HVX_NOTIFICATION);
     if(error_code != NRF_SUCCESS)
     {
         NRF_LOG_INFO("... attempted to notify client, who doesn't need it");
@@ -314,7 +290,7 @@ ret_code_t estc_ble_service_hello_notify(ble_estc_service_t *service)
     }
 
     ble_gatts_hvx_params_t hvx_params = {
-        .handle = service->char_hello.value_handle,
+        .handle = service->char_led_state.value_handle,
         .type = BLE_GATT_HVX_NOTIFICATION,
         .offset = 0,
         .p_data = NULL,
@@ -336,74 +312,74 @@ ret_code_t estc_ble_service_hello_notify(ble_estc_service_t *service)
     return NRF_SUCCESS;
 }
 
-ret_code_t estc_ble_service_btn_state_set(ble_estc_service_t *service, uint8_t *new_state)
-{
-    ret_code_t error_code = NRF_SUCCESS;
+// ret_code_t led_ble_service_btn_state_set(ble_led_service_t *service, uint8_t *new_state)
+// {
+//     ret_code_t error_code = NRF_SUCCESS;
 
-    uint8_t m_new_state = *new_state;
+//     uint8_t m_new_state = *new_state;
 
-    ble_gatts_value_t new_val = {
-        .p_value = &m_new_state,
-        .len = sizeof(uint8_t),
-        .offset = 0
-    };
+//     ble_gatts_value_t new_val = {
+//         .p_value = &m_new_state,
+//         .len = sizeof(uint8_t),
+//         .offset = 0
+//     };
 
-    error_code = sd_ble_gatts_value_set(service->connection_handle, service->char_btn_state.value_handle, &new_val);
-    APP_ERROR_CHECK(error_code);
+//     error_code = sd_ble_gatts_value_set(service->connection_handle, service->char_btn_state.value_handle, &new_val);
+//     APP_ERROR_CHECK(error_code);
 
-    error_code = estc_ble_service_btn_state_indicate(service);
+//     error_code = led_ble_service_btn_state_indicate(service);
     
-    if(error_code == NRF_SUCCESS)
-    {
-        NRF_LOG_INFO("Indicated with new state %d", m_new_state);
-    }
+//     if(error_code == NRF_SUCCESS)
+//     {
+//         NRF_LOG_INFO("Indicated with new state %d", m_new_state);
+//     }
 
-    return NRF_SUCCESS;
-}
+//     return NRF_SUCCESS;
+// }
 
-ret_code_t estc_ble_service_btn_state_indicate(ble_estc_service_t *service)
-{
-    NRF_LOG_INFO("Trying to indicate ...");
-    if(service->connection_handle == BLE_CONN_HANDLE_INVALID)
-    {
-        NRF_LOG_INFO("... connection handle is invalid");
-        return BLE_ERROR_INVALID_CONN_HANDLE;
-    }
-    ret_code_t error_code = NRF_SUCCESS;
+// ret_code_t led_ble_service_btn_state_indicate(ble_led_service_t *service)
+// {
+//     NRF_LOG_INFO("Trying to indicate ...");
+//     if(service->connection_handle == BLE_CONN_HANDLE_INVALID)
+//     {
+//         NRF_LOG_INFO("... connection handle is invalid");
+//         return BLE_ERROR_INVALID_CONN_HANDLE;
+//     }
+//     ret_code_t error_code = NRF_SUCCESS;
 
-    error_code = estc_ble_check_user_need_for_hvx(service->connection_handle, service->char_btn_state.cccd_handle, 
-                                                    BLE_GATT_HVX_INDICATION);
-    if(error_code != NRF_SUCCESS)
-    {
-        NRF_LOG_INFO("... attempted to indicate client, who doesn't need it");
-        return NRF_ERROR_FORBIDDEN;
-    }
+//     error_code = led_ble_check_user_need_for_hvx(service->connection_handle, service->char_btn_state.cccd_handle, 
+//                                                     BLE_GATT_HVX_INDICATION);
+//     if(error_code != NRF_SUCCESS)
+//     {
+//         NRF_LOG_INFO("... attempted to indicate client, who doesn't need it");
+//         return NRF_ERROR_FORBIDDEN;
+//     }
 
-    ble_gatts_hvx_params_t hvx_params = {
-        .handle = service->char_btn_state.value_handle,
-        .type = BLE_GATT_HVX_INDICATION,
-        .offset = 0,
-        .p_data = NULL,
-        .p_len = NULL   // Risky move ?
-    };
+//     ble_gatts_hvx_params_t hvx_params = {
+//         .handle = service->char_btn_state.value_handle,
+//         .type = BLE_GATT_HVX_INDICATION,
+//         .offset = 0,
+//         .p_data = NULL,
+//         .p_len = NULL   // Risky move ?
+//     };
     
-    // Check for previous indication being processed
-    if(service->inidication_free == 0)
-    {
-        NRF_LOG_INFO("Indications are not available yet");
-        return NRF_ERROR_INVALID_STATE;
-    }
-    NRF_LOG_INFO("Indications are available");
+//     // Check for previous indication being processed
+//     if(service->inidication_free == 0)
+//     {
+//         NRF_LOG_INFO("Indications are not available yet");
+//         return NRF_ERROR_INVALID_STATE;
+//     }
+//     NRF_LOG_INFO("Indications are available");
 
-    error_code = sd_ble_gatts_hvx(service->connection_handle, &hvx_params);
-    NRF_LOG_INFO("%s: retval of sd_ble_gatts_hvx : %x", __FUNCTION__, error_code);
-    VERIFY_SUCCESS(error_code);
-    service->inidication_free = 0;
+//     error_code = sd_ble_gatts_hvx(service->connection_handle, &hvx_params);
+//     NRF_LOG_INFO("%s: retval of sd_ble_gatts_hvx : %x", __FUNCTION__, error_code);
+//     VERIFY_SUCCESS(error_code);
+//     service->inidication_free = 0;
 
-    return NRF_SUCCESS;
-}
+//     return NRF_SUCCESS;
+// }
 
-static ret_code_t estc_ble_check_user_need_for_hvx(uint16_t conn_handle, uint16_t cccd_handle, uint16_t hvx_type)
+static ret_code_t led_ble_check_user_need_for_hvx(uint16_t conn_handle, uint16_t cccd_handle, uint16_t hvx_type)
 {
     uint16_t m_cccd_value;
     ret_code_t error_code;

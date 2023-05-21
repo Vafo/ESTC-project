@@ -41,10 +41,10 @@
  */
 /** @file
  *
- * @defgroup estc_gatt main.c
+ * @defgroup led_gatt main.c
  * @{
- * @ingroup estc_templates
- * @brief ESTC-GATT project file.
+ * @ingroup led_templates
+ * @brief LED-GATT project file.
  *
  * This file contains a template for creating a new BLE application with GATT services. It has
  * the code necessary to advertise, get a connection, restart advertising on disconnect.
@@ -84,7 +84,7 @@
 
 #include "led_service.h"
 
-#define DEVICE_NAME                     "ESTC-GATT"                             /**< Name of device. Will be included in the advertising data. */
+#define DEVICE_NAME                     "LED-GATT"                             /**< Name of device. Will be included in the advertising data. */
 #define MANUFACTURER_NAME               "NordicSemiconductor"                   /**< Manufacturer. Will be passed to Device Information Service. */
 #define APP_ADV_INTERVAL                300                                     /**< The advertising interval (in units of 0.625 ms. This value corresponds to 187.5 ms). */
 
@@ -107,35 +107,20 @@ NRF_BLE_GATT_DEF(m_gatt);                                                       
 NRF_BLE_QWR_DEF(m_qwr);                                                         /**< Context for the Queued Write module.*/
 BLE_ADVERTISING_DEF(m_advertising);                                             /**< Advertising module instance. */
 
-// #define PERIODIC_NOTIFIER_PERIOD_MS 5000
-// APP_TIMER_DEF(m_periodic_notifier);
-
-// #define PERIODIC_INDICATOR_PERIOD_MS 2000
-// APP_TIMER_DEF(m_periodic_indicator);
 
 static uint16_t m_conn_handle = BLE_CONN_HANDLE_INVALID;                        /**< Handle of the current connection. */
 
 static ble_uuid_t m_adv_uuids[] =                                               /**< Universally unique service identifiers. */
 {
     {BLE_UUID_DEVICE_INFORMATION_SERVICE, BLE_UUID_TYPE_BLE},
-    // TODO: 7. Add ESTC service UUID to the table
-    // {ESTC_SERVICE_UUID, BLE_UUID_TYPE_VENDOR_BEGIN}
+    // TODO: 7. Add LED service UUID to the table
+    {LED_SERVICE_UUID, BLE_UUID_TYPE_VENDOR_BEGIN}
 };
 
-// ESTC_SERVICE_DEF(m_estc_service); /**< ESTC example BLE service */
+LED_SERVICE_DEF(m_led_service); /**< LED example BLE service */
 
 static void advertising_start(void);
 
-// static void periodic_notifier_handler(void *p_ctx)
-// {
-//     estc_ble_service_hello_update(&m_estc_service);
-// }
-
-// static void periodic_indicator_handler(void *p_ctx)
-// {
-//     uint8_t state = nrf_gpio_pin_input_get(BSP_BUTTON_0);
-//     estc_ble_service_btn_state_set(&m_estc_service, &state);
-// }
 
 /**@brief Callback function for asserts in the SoftDevice.
  *
@@ -221,8 +206,8 @@ static void services_init(void)
     err_code = nrf_ble_qwr_init(&m_qwr, &qwr_init);
     APP_ERROR_CHECK(err_code);
 
-    // err_code = estc_ble_service_init(&m_estc_service);
-    // APP_ERROR_CHECK(err_code);
+    err_code = led_ble_service_init(&m_led_service);
+    APP_ERROR_CHECK(err_code);
 }
 
 
@@ -281,14 +266,6 @@ static void conn_params_init(void)
 }
 
 
-/**@brief Function for starting timers.
- */
-// static void application_timers_start(void)
-// {
-    
-// }
-
-
 /**@brief Function for putting the chip into sleep mode.
  *
  * @note This function will not return.
@@ -297,12 +274,7 @@ static void conn_params_init(void)
 // {
 //     ret_code_t err_code;
 
-//     // err_code = bsp_indication_set(BSP_INDICATE_IDLE);
-//     // APP_ERROR_CHECK(err_code);
-
-//     // // Prepare wakeup buttons.
-//     // err_code = bsp_btn_ble_sleep_mode_prepare();
-//     // APP_ERROR_CHECK(err_code);
+//     // Prepare wakeup buttons.
 
 //     // Go to system-off mode (this function will not return; wakeup will cause a reset).
 //     err_code = sd_power_system_off();
@@ -324,8 +296,6 @@ static void on_adv_evt(ble_adv_evt_t ble_adv_evt)
     {
         case BLE_ADV_EVT_FAST:
             NRF_LOG_INFO("ADV Event: Start fast advertising");
-            // err_code = bsp_indication_set(BSP_INDICATE_ADVERTISING);
-            // APP_ERROR_CHECK(err_code);
             break;
 
         case BLE_ADV_EVT_IDLE:
@@ -336,6 +306,7 @@ static void on_adv_evt(ble_adv_evt_t ble_adv_evt)
             break;
 
         default:
+            NRF_LOG_INFO("Ble adv evt %d", ble_adv_evt);
             break;
     }
 }
@@ -349,19 +320,17 @@ static void on_adv_evt(ble_adv_evt_t ble_adv_evt)
 static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
 {
     ret_code_t err_code = NRF_SUCCESS;
+    ble_gatts_evt_t gatts_evt;
 
     switch (p_ble_evt->header.evt_id)
     {
         case BLE_GAP_EVT_DISCONNECTED:
             NRF_LOG_INFO("Disconnected (conn_handle: %d)", p_ble_evt->evt.gap_evt.conn_handle);
-            // LED indication will be changed when advertising starts.
+
             break;
 
         case BLE_GAP_EVT_CONNECTED:
             NRF_LOG_INFO("Connected (conn_handle: %d)", p_ble_evt->evt.gap_evt.conn_handle);
-
-            // err_code = bsp_indication_set(BSP_INDICATE_CONNECTED);
-            // APP_ERROR_CHECK(err_code);
 
             m_conn_handle = p_ble_evt->evt.gap_evt.conn_handle;
             err_code = nrf_ble_qwr_conn_handle_assign(&m_qwr, m_conn_handle);
@@ -397,6 +366,11 @@ static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
             APP_ERROR_CHECK(err_code);
             break;
 
+        case BLE_GATTS_EVT_WRITE:
+            gatts_evt = p_ble_evt->evt.gatts_evt;
+            NRF_LOG_INFO("Write event received to uuid %d with len %d", gatts_evt.params.write.uuid.uuid, gatts_evt.params.write.len);
+            break;
+
         case BLE_GATTS_EVT_SYS_ATTR_MISSING:
             NRF_LOG_INFO("Sys attributes missing");
             uint16_t conn_handle = p_ble_evt->evt.gatts_evt.conn_handle;
@@ -406,6 +380,7 @@ static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
 
         default:
             // No implementation needed.
+            NRF_LOG_INFO("Unprocessed ble event %d", p_ble_evt->header.evt_id);
             break;
     }
 }
@@ -428,9 +403,9 @@ static void ble_stack_init(void)
     err_code = nrf_sdh_ble_default_cfg_set(APP_BLE_CONN_CFG_TAG, &ram_start);
     APP_ERROR_CHECK(err_code);
     
-    // ble_cfg_t custom_cfg = {0};
-    // custom_cfg.conn_cfg.params.gatts_conn_cfg.hvn_tx_queue_size = ESTC_SERVICE_HVN_QUEUE_SIZE;
-    // sd_ble_cfg_set(BLE_CONN_CFG_GATTS, &custom_cfg, ram_start);
+    ble_cfg_t custom_cfg = {0};
+    custom_cfg.conn_cfg.params.gatts_conn_cfg.hvn_tx_queue_size = LED_SERVICE_HVN_QUEUE_SIZE;
+    sd_ble_cfg_set(BLE_CONN_CFG_GATTS, &custom_cfg, ram_start);
 
     // Enable BLE stack.
     err_code = nrf_sdh_ble_enable(&ram_start);
@@ -440,40 +415,6 @@ static void ble_stack_init(void)
     NRF_SDH_BLE_OBSERVER(m_ble_observer, APP_BLE_OBSERVER_PRIO, ble_evt_handler, NULL);
 }
 
-
-/**@brief Function for handling events from the BSP module.
- *
- * @param[in]   event   Event generated when button is pressed.
- */
-// static void bsp_event_handler(bsp_event_t event)
-// {
-//     ret_code_t err_code;
-//     uint8_t btn_state;
-
-//     switch (event)
-//     {
-//         case BSP_EVENT_SLEEP:
-//             sleep_mode_enter();
-//             break; // BSP_EVENT_SLEEP
-
-//         case BSP_EVENT_DISCONNECT:
-//             err_code = sd_ble_gap_disconnect(m_conn_handle,
-//                                              BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
-//             if (err_code != NRF_ERROR_INVALID_STATE)
-//             {
-//                 APP_ERROR_CHECK(err_code);
-//             }
-//             break; // BSP_EVENT_DISCONNECT
-        
-//         case BSP_EVENT_KEY_0:
-//             btn_state = 1;
-//             estc_ble_service_btn_state_set(&m_estc_service, &btn_state);
-//             break;
-
-//         default:
-//             break;
-//     }
-// }
 
 
 /**@brief Function for initializing the Advertising functionality.
@@ -505,27 +446,6 @@ static void advertising_init(void)
 }
 
 
-/**@brief Function for initializing buttons and leds.
- *
- * @param[out] p_erase_bonds  Will be true if the clear bonding button was pressed to wake the application up.
- */
-// static void buttons_leds_init(void)
-// {
-//     ret_code_t err_code;
-
-//     err_code = bsp_init(BSP_INIT_LEDS | BSP_INIT_BUTTONS, bsp_event_handler);
-//     APP_ERROR_CHECK(err_code);
-
-//     err_code = bsp_btn_ble_init(NULL, NULL);
-//     APP_ERROR_CHECK(err_code);
-// }
-
-
-
-
-
-
-
 /**@brief Function for starting advertising.
  */
 static void advertising_start(void)
@@ -548,7 +468,7 @@ int main_ble_init(void)
     conn_params_init();
 
     // Start execution.
-    NRF_LOG_INFO("ESTC GATT server example started");
+    NRF_LOG_INFO("LED GATT server example started");
     // application_timers_start();
 
     advertising_start();
