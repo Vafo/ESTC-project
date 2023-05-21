@@ -36,8 +36,11 @@
 #include "ble.h"
 #include "ble_gatts.h"
 #include "ble_srv_common.h"
+#include "nrf_ble_qwr.h"
 
 #include "hsv_rgb.h"
+
+LED_SERVICE_DECL(m_led_service);
 
 ble_uuid128_t base_uuid = {
     .uuid128 = LED_BASE_UUID
@@ -78,9 +81,12 @@ void led_ble_service_on_ble_event(const ble_evt_t *p_ble_evt, void *ctx)
 {
     // ret_code_t err_code = NRF_SUCCESS;
     ble_led_service_t *p_led_service = (ble_led_service_t *) ctx;
-    ble_gatts_evt_write_t led_gatts_write_evt;
-    ble_gatts_value_t led_gatts_value;
+    // ble_gatts_evt_write_t led_gatts_write_evt;
+    // ble_gatts_value_t led_gatts_value;
+    // ble_led_rgb_value_t *p_rgb_data;
     uint16_t m_conn_handle;
+
+    ble_gatts_evt_rw_authorize_request_t rw_auth_evt;
 
     switch (p_ble_evt->header.evt_id)
     {
@@ -96,6 +102,7 @@ void led_ble_service_on_ble_event(const ble_evt_t *p_ble_evt, void *ctx)
             p_led_service->inidication_free = 1;
             break;
 
+        /*
         case BLE_GATTS_EVT_WRITE:
             led_gatts_write_evt = p_ble_evt->evt.gatts_evt.params.write;
             m_conn_handle = p_ble_evt->evt.gatts_evt.conn_handle;
@@ -125,8 +132,21 @@ void led_ble_service_on_ble_event(const ble_evt_t *p_ble_evt, void *ctx)
                 led_gatts_value.offset = led_gatts_write_evt.offset;
                 led_gatts_value.p_value = led_gatts_write_evt.data;
 
+                p_rgb_data = (ble_led_rgb_value_t *) led_gatts_value.p_value;
+                NRF_LOG_INFO("Write evt: received value (%d, %d, %d)", p_rgb_data->red, p_rgb_data->green, p_rgb_data->blue);
+                
                 sd_ble_gatts_value_set(m_conn_handle, p_led_service->char_led_set.value_handle, &led_gatts_value);
                 led_ble_service_led_set_save_value(p_led_service);
+            }
+
+            break;
+        */
+
+        case BLE_GATTS_EVT_RW_AUTHORIZE_REQUEST:
+            rw_auth_evt = p_ble_evt->evt.gatts_evt.params.authorize_request;
+            if(rw_auth_evt.request.write.handle == p_led_service->char_led_set.value_handle)
+            {
+                NRF_LOG_INFO("THIS IS A HIT %d", rw_auth_evt.request.write.op);
             }
 
             break;
@@ -167,6 +187,56 @@ void led_ble_service_on_ble_event(const ble_evt_t *p_ble_evt, void *ctx)
     }
 }
 
+uint16_t led_qwr_evt_handler_t(struct nrf_ble_qwr_t * p_qwr,
+                                nrf_ble_qwr_evt_t    * p_evt)
+{
+    ret_code_t err = BLE_GATT_STATUS_UNKNOWN;
+    ble_led_service_t *p_led_service = &m_led_service;
+
+    nrf_ble_qwr_evt_type_t evt_type = p_evt->evt_type;
+
+    ble_led_rgb_value_t rgb_data;
+    uint16_t rgb_len = sizeof(ble_led_rgb_value_t);
+    NRF_LOG_INFO("LED QWR HANDLER WAS CALLED WITH evt_type %d", evt_type);
+    switch(evt_type)
+    {
+        case NRF_BLE_QWR_EVT_AUTH_REQUEST:
+
+            // if(p_evt->attr_handle != p_led_service->char_led_set.value_handle)
+            // {
+            //     break;
+            // }
+
+            err = nrf_ble_qwr_value_get(p_qwr, p_evt->attr_handle, (uint8_t *) &rgb_data, &rgb_len);
+            APP_ERROR_CHECK(err);
+
+
+
+            if(rgb_len != sizeof(ble_led_rgb_value_t))
+            {
+                NRF_LOG_INFO("Bad length in Write Command Size %d != %d", rgb_len, sizeof(ble_led_rgb_value_t));
+                break;
+            }
+
+            NRF_LOG_INFO("QWR Write auth evt: received value (%d, %d, %d)", rgb_data.red, rgb_data.green, rgb_data.blue);
+
+            err = BLE_GATT_STATUS_SUCCESS;
+            break;
+
+        case NRF_BLE_QWR_EVT_EXECUTE_WRITE:
+
+            led_ble_service_led_set_save_value(p_led_service);
+
+            break;
+        
+        default:
+
+            break;
+    }
+
+    return err;
+}
+
 static ret_code_t led_ble_add_characteristics(ble_led_service_t *service)
 {
     VERIFY_PARAM_NOT_NULL(service);
@@ -184,7 +254,8 @@ static ret_code_t led_ble_add_characteristics(ble_led_service_t *service)
     // TODO: 6.5. Configure Characteristic metadata (enable read and write)
     ble_gatts_char_md_t char_md = { 0 };
     // char_md.char_props.read = 1;
-    char_md.char_props.write_wo_resp = 1;
+    // char_md.char_props.write_wo_resp = 1;
+    char_md.char_props.write = 1;
     // char_md.char_props.auth_signed_wr = 1;
     
     // Add User Description Descriptor

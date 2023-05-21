@@ -36,6 +36,8 @@
 #include "ble.h"
 #include "sdk_errors.h"
 
+#include "nrf_ble_qwr.h"
+
 // TODO: 1. Generate random BLE UUID (Version 4 UUID) and define it in the following format:
 // A5DBxxxx-03AB-450D-B840-4B3F25293BAD
 #define LED_BASE_UUID { 0xAD, 0x3B, 0x29, 0x25, 0x3F, 0x4B,    \
@@ -94,5 +96,7 @@ ret_code_t led_ble_service_led_state_notify(ble_led_service_t *p_service);
 
 ret_code_t led_ble_service_led_set_save_value(ble_led_service_t *p_service);
 
+uint16_t led_qwr_evt_handler_t(struct nrf_ble_qwr_t * p_qwr,
+                                nrf_ble_qwr_evt_t    * p_evt);
 
 #endif /* LED_SERVICE_H__ */

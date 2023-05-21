@@ -119,6 +119,9 @@ static ble_uuid_t m_adv_uuids[] =                                               
 
 LED_SERVICE_DEF(m_led_service); /**< LED example BLE service */
 
+#define BLE_QWR_MEM_SIZE 64
+uint8_t m_qwr_mem[BLE_QWR_MEM_SIZE];
+
 static void advertising_start(void);
 
 
@@ -198,7 +201,14 @@ static void nrf_qwr_error_handler(uint32_t nrf_error)
 static void services_init(void)
 {
     ret_code_t         err_code;
-    nrf_ble_qwr_init_t qwr_init = {0};
+    nrf_ble_qwr_init_t qwr_init = {
+        .callback = led_qwr_evt_handler_t,
+        .mem_buffer = {
+            .p_mem = m_qwr_mem,
+            .len = ARRAY_SIZE(m_qwr_mem)
+        },
+        .error_handler = nrf_qwr_error_handler
+    };
 
     // Initialize Queued Write Module.
     qwr_init.error_handler = nrf_qwr_error_handler;
@@ -208,6 +218,11 @@ static void services_init(void)
 
     err_code = led_ble_service_init(&m_led_service);
     APP_ERROR_CHECK(err_code);
+
+    err_code = nrf_ble_qwr_attr_register(&m_qwr, \
+                m_led_service.char_led_set.value_handle);
+    APP_ERROR_CHECK(err_code);
+    
 }
 
 
