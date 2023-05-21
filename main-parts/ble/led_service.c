@@ -81,6 +81,7 @@ void led_ble_service_on_ble_event(const ble_evt_t *p_ble_evt, void *ctx)
     // ret_code_t err_code = NRF_SUCCESS;
     ble_led_service_t *p_led_service = (ble_led_service_t *) ctx;
     ble_gatts_evt_write_t led_gatts_write_evt;
+    ble_gatts_value_t led_gatts_value;
     uint16_t m_conn_handle;
 
     switch (p_ble_evt->header.evt_id)
@@ -105,12 +106,28 @@ void led_ble_service_on_ble_event(const ble_evt_t *p_ble_evt, void *ctx)
             {
                 break;
             }
-            NRF_LOG_INFO("AUTH %d OP %d", led_gatts_write_evt.auth_required, led_gatts_write_evt.op);
+            // NRF_LOG_INFO("AUTH %d OP %d", led_gatts_write_evt.auth_required, led_gatts_write_evt.op);
+            if(led_gatts_write_evt.auth_required != 1)
+            {
+                break;
+            }
             
-            
+            if(led_gatts_write_evt.len != sizeof(ble_led_set_char_value_t) || led_gatts_write_evt.offset != 0)
+            {
+                NRF_LOG_INFO("Bad length in Write Command Size %d != %d offset %d", \
+                    led_gatts_write_evt.len, sizeof(ble_led_set_char_value_t), \
+                    led_gatts_write_evt.offset);
+                break;
+            }
+
             if(led_gatts_write_evt.uuid.uuid == LED_GATT_CHAR_LED_SET && \
                led_gatts_write_evt.handle == p_led_service->char_led_set.value_handle)
             {
+                led_gatts_value.len = led_gatts_write_evt.len;
+                led_gatts_value.offset = led_gatts_write_evt.offset;
+                led_gatts_value.p_value = led_gatts_write_evt.data;
+
+                sd_ble_gatts_value_set(m_conn_handle, p_led_service->char_led_set.value_handle, &led_gatts_value);
                 led_ble_service_led_set_save_value(p_led_service);
             }
 
@@ -169,8 +186,8 @@ static ret_code_t led_ble_add_characteristics(ble_led_service_t *service)
     // TODO: 6.5. Configure Characteristic metadata (enable read and write)
     ble_gatts_char_md_t char_md = { 0 };
     // char_md.char_props.read = 1;
-    char_md.char_props.write = 1;
-    char_md.char_props.auth_signed_wr = 1;
+    char_md.char_props.write_wo_resp = 1;
+    // char_md.char_props.auth_signed_wr = 1;
     
     // Add User Description Descriptor
     char_md.p_char_user_desc = m_char_user_desc;
@@ -181,6 +198,7 @@ static ret_code_t led_ble_add_characteristics(ble_led_service_t *service)
     // Configures attribute metadata. For now we only specify that the attribute will be stored in the softdevice
     ble_gatts_attr_md_t attr_md = { 0 };
     attr_md.vloc = BLE_GATTS_VLOC_STACK;
+    attr_md.wr_auth = 1;
 
 
     // TODO: 6.6. Set read/write security levels to our attribute metadata using `BLE_GAP_CONN_SEC_MODE_SET_OPEN`
@@ -199,6 +217,7 @@ static ret_code_t led_ble_add_characteristics(ble_led_service_t *service)
     // TODO: 6.4. Add new characteristic to the service using `sd_ble_gatts_characteristic_add`
     error_code = sd_ble_gatts_characteristic_add(service->service_handle, &char_md, &attr_char_value, &service->char_led_set);
     APP_ERROR_CHECK(error_code);
+
 
     // LED State Characteristic
     ble_uuid_t char_led_state_uuid = {
