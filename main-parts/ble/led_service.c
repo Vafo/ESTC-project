@@ -146,7 +146,7 @@ void led_ble_service_on_ble_event(const ble_evt_t *p_ble_evt, void *ctx)
             rw_auth_evt = p_ble_evt->evt.gatts_evt.params.authorize_request;
             if(rw_auth_evt.request.write.handle == p_led_service->char_led_set.value_handle)
             {
-                NRF_LOG_INFO("THIS IS A HIT %d", rw_auth_evt.request.write.op);
+                // NRF_LOG_INFO("THIS IS A HIT %d", rw_auth_evt.request.write.op);
             }
 
             break;
@@ -256,6 +256,7 @@ static ret_code_t led_ble_add_characteristics(ble_led_service_t *service)
     // char_md.char_props.read = 1;
     // char_md.char_props.write_wo_resp = 1;
     char_md.char_props.write = 1;
+    char_md.char_ext_props.reliable_wr = 1;         // Enable QWR 
     // char_md.char_props.auth_signed_wr = 1;
     
     // Add User Description Descriptor

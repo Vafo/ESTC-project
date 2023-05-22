@@ -153,7 +153,7 @@ static void picker_state_exec(picker_fsm_mode_t mode)
             NRF_LOG_WARNING("IT HAPPEND?");
             break;
     }
-    NRF_LOG_INFO("OUT OF STATE EXEC");
+    // NRF_LOG_INFO("OUT OF STATE EXEC");
     // I can not update here fsm_inst.rgb_ctx->op_ctx.period_num directly
     // Why??
     cur_val /= 2;

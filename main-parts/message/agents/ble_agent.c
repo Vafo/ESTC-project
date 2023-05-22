@@ -76,9 +76,9 @@ ret_code_t led_ble_service_led_set_save_value(ble_led_service_t *service)
     rgb_to_hsv(&rgb_data, &hsv_data);
 
     ret = message_agent_send_msg(&ble_agent_ctx, SAVE_LED_EVENT, &hsv_data, NULL);
-    NRF_LOG_INFO("SAVE_LED_EVENT SENT %d", ret);
+    // NRF_LOG_INFO("SAVE_LED_EVENT SENT %d", ret);
     ret = message_agent_send_msg(&ble_agent_ctx, GET_LED_EVENT, NULL, NULL);
-    NRF_LOG_INFO("GET_LED_EVENT SENT %d", ret);
+    // NRF_LOG_INFO("GET_LED_EVENT SENT %d", ret);
 
     return NRFX_SUCCESS;
 }

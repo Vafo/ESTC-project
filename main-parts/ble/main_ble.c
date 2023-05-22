@@ -119,7 +119,7 @@ static ble_uuid_t m_adv_uuids[] =                                               
 
 LED_SERVICE_DEF(m_led_service); /**< LED example BLE service */
 
-#define BLE_QWR_MEM_SIZE 64
+#define BLE_QWR_MEM_SIZE 128
 uint8_t m_qwr_mem[BLE_QWR_MEM_SIZE];
 
 static void advertising_start(void);
@@ -337,6 +337,7 @@ static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
     ret_code_t err_code = NRF_SUCCESS;
     ble_gatts_evt_t gatts_evt;
 
+    NRF_LOG_INFO("main_ble: received ble event %d", p_ble_evt->header.evt_id);
     switch (p_ble_evt->header.evt_id)
     {
         case BLE_GAP_EVT_DISCONNECTED:
@@ -395,7 +396,6 @@ static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
 
         default:
             // No implementation needed.
-            NRF_LOG_INFO("Unprocessed ble event %d", p_ble_evt->header.evt_id);
             break;
     }
 }
